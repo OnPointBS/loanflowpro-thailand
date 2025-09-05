@@ -29,24 +29,19 @@ export default function ClientsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
-  // const clients = useQuery(api.clients.getClients, 
-  //   workspace ? { workspaceId: workspace._id } : "skip"
-  // );
-  // const searchResults = useQuery(api.clients.searchClients, 
-  //   workspace && searchQuery ? { workspaceId: workspace._id, query: searchQuery } : "skip"
-  // );
+  const clients = useQuery(api.clients.getClients, 
+    workspace ? { workspaceId: workspace._id } : "skip"
+  );
+  const searchResults = useQuery(api.clients.searchClients, 
+    workspace && searchQuery ? { workspaceId: workspace._id, query: searchQuery } : "skip"
+  );
   
-  // Mock data for now
-  const clients: any[] = [];
-  const searchResults: any[] = [];
-
-  // const deleteClient = useMutation(api.clients.deleteClient);
+  const deleteClient = useMutation(api.clients.deleteClient);
 
   const handleDeleteClient = async (clientId: string) => {
     if (confirm("Are you sure you want to delete this client?")) {
       try {
-        // await deleteClient({ clientId });
-        console.log("Deleting client:", clientId);
+        await deleteClient({ clientId });
       } catch (error) {
         console.error("Error deleting client:", error);
       }

@@ -26,7 +26,7 @@ export default function NewClientPage() {
     notes: "",
   });
 
-  // const createClient = useMutation(api.clients.createClient);
+  const createClient = useMutation(api.clients.createClient);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,17 +38,15 @@ export default function NewClientPage() {
         throw new Error("Workspace not found");
       }
 
-      // await createClient({
-      //   workspaceId: workspace._id,
-      //   name: formData.name,
-      //   email: formData.email,
-      //   phone: formData.phone || undefined,
-      //   company: formData.company || undefined,
-      //   address: formData.address || undefined,
-      //   notes: formData.notes || undefined,
-      // });
-      
-      console.log("Creating client:", formData);
+      await createClient({
+        workspaceId: workspace._id,
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        company: formData.company || undefined,
+        address: formData.address || undefined,
+        notes: formData.notes || undefined,
+      });
 
       router.push("/app/clients");
     } catch (err) {

@@ -497,9 +497,9 @@ export const verifyMagicLink = mutation({
         // Create user with pending status
         const userId = await ctx.db.insert("users", {
           email: magicLink.email,
-          role: "client", // Default role, can be changed by admin
+          role: "advisor", // Default role for loan workflow management
           workspaceId,
-          status: "pending",
+          status: "active",
           profile: {
             firstName: "",
             lastName: "",
@@ -702,5 +702,55 @@ export const canUserAccessWorkspace = query({
     }
 
     return RBACEngine.canAccessWorkspace(user, workspaceId);
+  },
+});
+
+// Update workspace settings
+export const updateWorkspace = mutation({
+  args: {
+    workspaceId: v.id("workspaces"),
+    updates: v.object({
+      name: v.optional(v.string()),
+      slug: v.optional(v.string()),
+      settings: v.optional(v.object({
+        timezone: v.optional(v.string()),
+        dateFormat: v.optional(v.string()),
+        timeFormat: v.optional(v.union(v.literal("12h"), v.literal("24h"))),
+        allowClientRegistration: v.optional(v.boolean()),
+        requireApproval: v.optional(v.boolean()),
+        branding: v.optional(v.object({
+          companyName: v.optional(v.string()),
+          primaryColor: v.optional(v.string()),
+          logoUrl: v.optional(v.string()),
+        })),
+      })),
+    }),
+  },
+  handler: async (ctx, { workspaceId, updates }) => {
+    const workspace = await ctx.db.get(workspaceId);
+    if (!workspace) {
+      throw new Error("Workspace not found");
+    }
+
+    const updateData: any = {
+      updatedAt: Date.now(),
+    };
+
+    if (updates.name) updateData.name = updates.name;
+    if (updates.slug) updateData.slug = updates.slug;
+    if (updates.settings) {
+      updateData.settings = {
+        ...workspace.settings,
+        ...updates.settings,
+        branding: {
+          ...workspace.settings.branding,
+          ...updates.settings.branding,
+        },
+      };
+    }
+
+    await ctx.db.patch(workspaceId, updateData);
+
+    return { success: true };
   },
 });

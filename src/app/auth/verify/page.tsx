@@ -83,7 +83,7 @@ function VerifyPageContent() {
     };
 
     verifyToken();
-  }, [searchParams, verifyMagicLink, router]);
+  }, [searchParams]);
 
   const handleRetry = () => {
     router.push("/");
