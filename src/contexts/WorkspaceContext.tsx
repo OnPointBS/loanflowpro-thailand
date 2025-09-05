@@ -8,15 +8,9 @@ import { useAuth } from "./AuthContext";
 interface Workspace {
   _id: string;
   name: string;
+  slug: string;
   status: "active" | "trial" | "suspended";
-  subscription: {
-    plan: "solo" | "team" | "enterprise";
-    status: "active" | "canceled" | "past_due";
-    seats: number;
-    stripeCustomerId?: string;
-    stripeSubscriptionId?: string;
-    currentPeriodEnd?: number;
-  };
+  subscriptionTier: "solo" | "team" | "enterprise";
   settings: {
     timezone: string;
     dateFormat: string;
@@ -47,25 +41,18 @@ interface WorkspaceContextType {
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const [workspace, setWorkspace] = useState<Workspace | null>(null);
+  const { user, workspace: authWorkspace, isLoading: authLoading } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
 
-  const workspaceData = useQuery(
-    api.auth.getWorkspace,
-    user?.workspaceId ? { workspaceId: user.workspaceId } : "skip"
-  );
-
   useEffect(() => {
-    if (workspaceData) {
-      setWorkspace(workspaceData);
+    if (authWorkspace) {
       setIsLoading(false);
     } else if (user === null) {
-      setWorkspace(null);
       setIsLoading(false);
     }
-  }, [workspaceData, user]);
+  }, [authWorkspace, user]);
 
+  const workspace = authWorkspace;
   const isTrial = workspace?.status === "trial";
   const isActive = workspace?.status === "active";
 
@@ -76,7 +63,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       enterprise: { maxClients: 500, maxStorage: 50 * 1024 * 1024 * 1024, maxSeats: 50 },
     };
     
-    return limits[workspace?.subscription.plan || "solo"];
+    return limits[workspace?.subscriptionTier || "solo"];
   };
 
   const canAccess = (feature: string) => {
@@ -106,7 +93,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     workspace,
-    isLoading,
+    isLoading: isLoading || authLoading,
     isTrial,
     isActive,
     canAccess,

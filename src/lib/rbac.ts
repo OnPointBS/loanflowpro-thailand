@@ -75,17 +75,17 @@ export class RBACEngine {
    */
   static getPermissionsForUser(user: User, workspaceSettings?: WorkspaceSettings): Permission[] {
     const rolePermissions = this.ROLE_PERMISSIONS[user.role] || [];
-    const customPermissions = user.permissions || [];
+    const customPermissions = (user.permissions || []) as Permission[];
     
     // Combine role permissions with custom permissions
-    const allPermissions = [...new Set([...rolePermissions, ...customPermissions])];
+    const allPermissions: Permission[] = [...new Set([...rolePermissions, ...customPermissions])];
     
     // Apply workspace-specific restrictions
     if (user.role === "client" && workspaceSettings?.requireApproval) {
       // Clients might have limited access if approval is required
       return allPermissions.filter(permission => 
         !permission.includes(":create") && !permission.includes(":update") && !permission.includes(":delete")
-      );
+      ) as Permission[];
     }
     
     return allPermissions;

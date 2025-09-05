@@ -44,7 +44,7 @@ export function Header() {
           {/* Trial badge */}
           {isTrial && (
             <Badge variant="warning" size="sm">
-              Trial - {workspace?.subscription.plan} Plan
+              Trial - {workspace?.subscriptionTier || 'solo'} Plan
             </Badge>
           )}
 

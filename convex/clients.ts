@@ -54,7 +54,7 @@ export const createClient = mutation({
       action: "client_created",
       resourceType: "client",
       resourceId: clientId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: args.workspaceId,
       details: { clientName: args.name },
       createdAt: Date.now(),
@@ -111,7 +111,7 @@ export const updateClient = mutation({
       action: "client_updated",
       resourceType: "client",
       resourceId: clientId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: client.workspaceId,
       details: updates,
       createdAt: Date.now(),
@@ -140,7 +140,7 @@ export const deleteClient = mutation({
       action: "client_deleted",
       resourceType: "client",
       resourceId: clientId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: client.workspaceId,
       details: { clientName: client.name },
       createdAt: Date.now(),

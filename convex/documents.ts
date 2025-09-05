@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
-import { ImageAnnotatorClient } from "@google-cloud/vision";
 
 // Get documents for a loan file
 export const getDocumentsByLoanFile = query({
@@ -125,7 +124,7 @@ export const updateDocument = mutation({
       action: "document_updated",
       resourceType: "document",
       resourceId: documentId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: document.workspaceId,
       details: updates,
       createdAt: Date.now(),
@@ -173,7 +172,7 @@ export const deleteDocument = mutation({
       action: "document_deleted",
       resourceType: "document",
       resourceId: documentId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: document.workspaceId,
       details: { 
         loanFileId: document.loanFileId,
@@ -184,76 +183,21 @@ export const deleteDocument = mutation({
   },
 });
 
-// Process OCR for document
-export const processOCR = mutation({
-  args: { documentId: v.id("documents") },
-  handler: async (ctx, { documentId }) => {
-    const document = await ctx.db.get(documentId);
-    if (!document) {
-      throw new Error("Document not found");
-    }
-
-    // Update status to processing
+// Update OCR results for document
+export const updateOCRResults = mutation({
+  args: {
+    documentId: v.id("documents"),
+    ocrResults: v.object({
+      text: v.string(),
+      confidence: v.number(),
+      boundingBoxes: v.array(v.any()),
+    }),
+  },
+  handler: async (ctx, { documentId, ocrResults }) => {
     await ctx.db.patch(documentId, {
-      ocrStatus: "processing",
+      ocrStatus: "completed",
+      ocrText: ocrResults.text,
       updatedAt: Date.now(),
-    });
-
-    try {
-      // Check if Google Vision API key is configured
-      const visionApiKey = process.env.GOOGLE_VISION_API_KEY;
-      
-      if (!visionApiKey) {
-        console.log("Google Vision API key not configured, using mock OCR");
-        // Fallback to mock OCR processing
-        const mockOcrText = `OCR text extracted from ${document.name}\n\nThis is a mock OCR result. To enable real OCR processing, configure the GOOGLE_VISION_API_KEY environment variable in Convex.`;
-        
-        await ctx.db.patch(documentId, {
-          ocrStatus: "completed",
-          ocrText: mockOcrText,
-          updatedAt: Date.now(),
-        });
-      } else {
-        // Use Google Vision API for real OCR processing
-        const client = new ImageAnnotatorClient({
-          keyFilename: visionApiKey, // This should be a service account key file path
-        });
-
-        // For now, we'll use a mock approach since we need the actual file content
-        // In a real implementation, you'd download the file from Convex storage
-        // and pass it to the Vision API
-        const mockOcrText = `OCR text extracted from ${document.name}\n\nGoogle Vision API integration ready. File URL: ${document.url}`;
-        
-        await ctx.db.patch(documentId, {
-          ocrStatus: "completed",
-          ocrText: mockOcrText,
-          updatedAt: Date.now(),
-        });
-      }
-    } catch (error) {
-      console.error("OCR processing error:", error);
-      
-      // Mark as failed
-      await ctx.db.patch(documentId, {
-        ocrStatus: "failed",
-        updatedAt: Date.now(),
-      });
-      
-      throw new Error("OCR processing failed");
-    }
-
-    // Log the action
-    await ctx.db.insert("auditLogs", {
-      action: "document_ocr_processed",
-      resourceType: "document",
-      resourceId: documentId,
-      userId: "system", // In real app, get from auth context
-      workspaceId: document.workspaceId,
-      details: { 
-        loanFileId: document.loanFileId,
-        name: document.name,
-      },
-      createdAt: Date.now(),
     });
   },
 });

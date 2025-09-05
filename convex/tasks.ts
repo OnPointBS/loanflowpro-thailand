@@ -87,7 +87,7 @@ export const createTask = mutation({
       action: "task_created",
       resourceType: "task",
       resourceId: taskId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: args.workspaceId,
       details: { 
         loanFileId: args.loanFileId,
@@ -151,7 +151,7 @@ export const updateTask = mutation({
       action: "task_updated",
       resourceType: "task",
       resourceId: taskId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: task.workspaceId,
       details: updates,
       createdAt: Date.now(),
@@ -184,7 +184,7 @@ export const deleteTask = mutation({
       action: "task_deleted",
       resourceType: "task",
       resourceId: taskId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: task.workspaceId,
       details: { loanFileId: task.loanFileId },
       createdAt: Date.now(),
@@ -209,7 +209,7 @@ export const completeTask = mutation({
         action: "task_completed",
         resourceType: "task",
         resourceId: taskId,
-        userId: "system", // In real app, get from auth context
+        userId: undefined, // In real app, get from auth context
         workspaceId: task.workspaceId,
         details: { title: task.title },
         createdAt: Date.now(),

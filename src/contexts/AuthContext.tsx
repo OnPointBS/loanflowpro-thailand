@@ -1,17 +1,17 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { Id } from "../../convex/_generated/dataModel";
-import { useAuthActions, useAuthToken } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import { RBACEngine, type User, type Permission, type WorkspaceSettings } from "@/lib/rbac";
 
 interface Workspace {
-  id: string;
+  _id: string;
   name: string;
   slug: string;
   status: "active" | "trial" | "suspended";
+  subscriptionTier: "solo" | "team" | "enterprise";
   settings: WorkspaceSettings;
 }
 
@@ -21,187 +21,130 @@ interface AuthContextType {
   permissions: Permission[];
   isLoading: boolean;
   isAuthenticated: boolean;
-  sendMagicLink: (email: string, workspaceSlug?: string) => Promise<void>;
-  verifyMagicLink: (token: string) => Promise<{ redirectRoute: string; isNewUser: boolean }>;
-  createWorkspace: (email: string, workspaceName: string, name?: string, firstName?: string, lastName?: string) => Promise<void>;
+  login: (email: string, workspaceSlug?: string) => Promise<void>;
   logout: () => Promise<void>;
+  verifyMagicLink: (token: string) => Promise<{
+    success: boolean;
+    user: {
+      _id: string;
+      email: string;
+      name?: string;
+      role: string;
+      workspaceId: string;
+      status: string;
+      profile: any;
+    };
+    workspace: {
+      _id: string;
+      name: string;
+      slug: string;
+      status: string;
+    };
+    redirectRoute: string;
+    isNewUser: boolean;
+  }>;
   hasPermission: (permission: Permission) => boolean;
   canAccess: (resource: string, action: string) => boolean;
-  canAccessRoute: (route: string) => boolean;
-  getAvailableRoutes: () => string[];
-  isWorkspaceAdmin: boolean;
-  canInviteUsers: boolean;
   canManageBilling: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { signIn, signOut } = useAuthActions();
-  const token = useAuthToken();
-  const isAuthenticated = !!token;
   const [user, setUser] = useState<User | null>(null);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
+  
+  const isAuthenticated = !!sessionToken;
 
-  const sendMagicLinkMutation = useMutation(api.auth.sendMagicLink);
+  // Convex actions and mutations
+  const sendMagicLinkAction = useAction(api.auth.sendMagicLink);
   const verifyMagicLinkMutation = useMutation(api.auth.verifyMagicLink);
-  const createWorkspaceMutation = useMutation(api.auth.createWorkspaceAndUser);
-  const getUserPermissions = useQuery(api.auth.getUserPermissions, 
-    user ? { userId: user._id as Id<"users"> } : "skip"
-  );
 
-  // Get current user and workspace when authenticated
+  // Check for existing session on mount
   useEffect(() => {
-    if (isAuthenticated) {
-      // In a real implementation, you'd get user data from Convex Auth
-      // For now, we'll use the existing logic
-      const storedUser = localStorage.getItem("user");
-      const storedWorkspace = localStorage.getItem("workspace");
+    const token = localStorage.getItem("sessionToken");
+    if (token) {
+      setSessionToken(token);
+      // TODO: Verify token with backend
+    }
+    setIsLoading(false);
+  }, []);
+
+  const login = async (email: string, workspaceSlug?: string) => {
+    try {
+      // Send magic link via Convex action
+      const result = await sendMagicLinkAction({ email, workspaceSlug });
       
-      if (storedUser) {
-        try {
-          const userData = JSON.parse(storedUser);
-          setUser(userData);
-          
-          if (storedWorkspace) {
-            const workspaceData = JSON.parse(storedWorkspace);
-            setWorkspace(workspaceData);
-          }
-        } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          localStorage.removeItem("user");
-          localStorage.removeItem("workspace");
-        }
-      }
-      
-      setIsLoading(false);
-    } else {
-      setUser(null);
-      setWorkspace(null);
-      setPermissions([]);
-      setIsLoading(false);
-    }
-  }, [isAuthenticated]);
-
-  // Update permissions when user or workspace changes
-  useEffect(() => {
-    if (user && workspace) {
-      const userPermissions = RBACEngine.getPermissionsForUser(user, workspace.settings);
-      setPermissions(userPermissions);
-    } else {
-      setPermissions([]);
-    }
-  }, [user, workspace]);
-
-  const sendMagicLink = async (email: string, workspaceSlug?: string) => {
-    try {
-      await sendMagicLinkMutation({ email, workspaceSlug });
-    } catch (error) {
-      console.error("Error sending magic link:", error);
-      throw error;
-    }
-  };
-
-  const verifyMagicLink = async (token: string) => {
-    try {
-      const result = await verifyMagicLinkMutation({ token });
-
       if (result.success) {
-        setUser(result.user);
-        setWorkspace(result.workspace);
-        
-        // Store in localStorage
-        localStorage.setItem("user", JSON.stringify(result.user));
-        localStorage.setItem("workspace", JSON.stringify(result.workspace));
-        
-        return {
-          redirectRoute: result.redirectRoute,
-          isNewUser: result.isNewUser,
-        };
+        // Show success message (you could add a toast notification here)
+        console.log("Magic link sent successfully");
+        return;
+      } else {
+        throw new Error(result.message || "Failed to send magic link");
       }
     } catch (error) {
-      console.error("Error verifying magic link:", error);
-      throw error;
-    }
-  };
-
-  const createWorkspace = async (
-    email: string, 
-    workspaceName: string, 
-    name?: string, 
-    firstName?: string, 
-    lastName?: string
-  ) => {
-    try {
-      const result = await createWorkspaceMutation({
-        email,
-        workspaceName,
-        name,
-        firstName,
-        lastName,
-      });
-
-      if (result.success) {
-        // Send magic link to the new workspace
-        await sendMagicLink(email, result.slug);
-      }
-    } catch (error) {
-      console.error("Error creating workspace:", error);
+      console.error("Login error:", error);
       throw error;
     }
   };
 
   const logout = async () => {
-    await signOut();
+    setSessionToken(null);
     setUser(null);
     setWorkspace(null);
     setPermissions([]);
-    localStorage.removeItem("user");
-    localStorage.removeItem("workspace");
+    localStorage.removeItem("sessionToken");
+  };
+
+  const verifyMagicLink = async (token: string) => {
+    try {
+      const result = await verifyMagicLinkMutation({ token });
+      
+      if (result.success) {
+        // Update local state with user and workspace data
+        setUser(result.user as User);
+        setWorkspace(result.workspace as Workspace);
+        setSessionToken(token); // Use the magic link token as session token for now
+        localStorage.setItem("sessionToken", token);
+        
+        // Update permissions based on user role
+        const userPermissions = RBACEngine.getPermissionsForUser(result.user as User, result.workspace?.settings);
+        setPermissions(userPermissions);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Magic link verification error:", error);
+      throw error;
+    }
   };
 
   const hasPermission = (permission: Permission): boolean => {
     if (!user || !workspace) return false;
-    return RBACEngine.hasPermission(user, permission, workspace.settings);
+    return RBACEngine.canUserAccess(user, permission.split(":")[0], permission.split(":")[1]);
   };
 
   const canAccess = (resource: string, action: string): boolean => {
     if (!user || !workspace) return false;
-    return RBACEngine.canUserAccess(user, resource, action, workspace.settings);
+    return RBACEngine.canUserAccess(user, resource, action);
   };
 
-  const canAccessRoute = (route: string): boolean => {
-    if (!user || !workspace) return false;
-    return RBACEngine.canAccessRoute(user, route, workspace.settings);
-  };
+  const canManageBilling = hasPermission("billing:manage");
 
-  const getAvailableRoutes = (): string[] => {
-    if (!user || !workspace) return [];
-    return RBACEngine.getAvailableRoutes(user, workspace.settings);
-  };
-
-  const isWorkspaceAdmin = user ? RBACEngine.isWorkspaceAdmin(user) : false;
-  const canInviteUsers = user ? RBACEngine.canInviteUsers(user) : false;
-  const canManageBilling = user ? RBACEngine.canManageBilling(user) : false;
-
-  const value = {
+  const value: AuthContextType = {
     user,
     workspace,
     permissions,
     isLoading,
     isAuthenticated,
-    sendMagicLink,
-    verifyMagicLink,
-    createWorkspace,
+    login,
     logout,
+    verifyMagicLink,
     hasPermission,
     canAccess,
-    canAccessRoute,
-    getAvailableRoutes,
-    isWorkspaceAdmin,
-    canInviteUsers,
     canManageBilling,
   };
 

@@ -225,11 +225,27 @@ export const acceptClientInvitation = mutation({
         throw new Error("Failed to create user");
       }
 
+      // Create client record
+      const clientId = await ctx.db.insert("clients", {
+        name: user.profile.firstName + " " + user.profile.lastName,
+        email: user.email,
+        status: "active",
+        workspaceId: invitation.workspaceId,
+        profile: {
+          company: undefined,
+          address: undefined,
+          notes: undefined,
+        },
+        loanFiles: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+
       // Update invitation status
       await ctx.db.patch(invitation._id, {
         status: "accepted",
         acceptedAt: Date.now(),
-        clientId: user._id,
+        clientId: clientId,
         updatedAt: Date.now(),
       });
 

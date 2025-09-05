@@ -171,7 +171,7 @@ export const checkLimits = query({
     const withinLimits = 
       usage.activeClients <= planLimits.maxClients &&
       usage.storageUsed <= planLimits.maxStorage &&
-      usage.seats <= planLimits.maxSeats;
+      subscription.seats <= planLimits.maxSeats;
 
     return {
       withinLimits,
@@ -219,7 +219,7 @@ export const createCheckoutSession = mutation({
           action: "checkout_session_created",
           resourceType: "subscription",
           resourceId: workspaceId,
-          userId: "system",
+          userId: undefined,
           workspaceId,
           details: { plan, seats, sessionId, mock: true },
           createdAt: Date.now(),
@@ -291,7 +291,7 @@ export const createCheckoutSession = mutation({
         action: "checkout_session_created",
         resourceType: "subscription",
         resourceId: workspaceId,
-        userId: "system",
+        userId: undefined,
         workspaceId,
         details: { plan, seats, sessionId: session.id },
         createdAt: Date.now(),
@@ -349,7 +349,7 @@ export const handleWebhook = mutation({
         action: "stripe_webhook_received",
         resourceType: "webhook",
         resourceId: data.id || "unknown",
-        userId: "system",
+        userId: undefined,
         workspaceId: data.metadata?.workspaceId || "unknown",
         details: { eventType, data },
         createdAt: Date.now(),

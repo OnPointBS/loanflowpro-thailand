@@ -75,7 +75,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:translate-x-0",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
@@ -118,7 +118,7 @@ export function Sidebar() {
               {isTrial && (
                 <div className="mt-2">
                   <Badge variant="warning" size="sm">
-                    Trial - {workspace?.subscription.plan} Plan
+                    Trial - {workspace?.subscriptionTier || 'solo'} Plan
                   </Badge>
                 </div>
               )}

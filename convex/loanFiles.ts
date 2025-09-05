@@ -80,7 +80,7 @@ export const createLoanFile = mutation({
       action: "loan_file_created",
       resourceType: "loanFile",
       resourceId: loanFileId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: args.workspaceId,
       details: { 
         clientId: args.clientId,
@@ -142,7 +142,7 @@ export const updateLoanFile = mutation({
       action: "loan_file_updated",
       resourceType: "loanFile",
       resourceId: loanFileId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: loanFile.workspaceId,
       details: updates,
       createdAt: Date.now(),
@@ -190,7 +190,7 @@ export const deleteLoanFile = mutation({
       action: "loan_file_deleted",
       resourceType: "loanFile",
       resourceId: loanFileId,
-      userId: "system", // In real app, get from auth context
+      userId: undefined, // In real app, get from auth context
       workspaceId: loanFile.workspaceId,
       details: { clientId: loanFile.clientId },
       createdAt: Date.now(),

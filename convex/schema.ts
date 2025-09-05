@@ -1,11 +1,39 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
-import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
-  // Convex Auth tables
-  ...authTables,
-  
+  // Users table
+  users: defineTable({
+    email: v.string(),
+    name: v.optional(v.string()),
+    role: v.union(v.literal("advisor"), v.literal("staff"), v.literal("client")),
+    workspaceId: v.id("workspaces"),
+    status: v.union(v.literal("active"), v.literal("pending"), v.literal("suspended")),
+    permissions: v.optional(v.array(v.string())), // custom permissions override
+    lastActiveAt: v.optional(v.number()),
+    profile: v.object({
+      firstName: v.string(),
+      lastName: v.string(),
+      avatar: v.optional(v.string()),
+      phone: v.optional(v.string()),
+    }),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_email", ["email"])
+    .index("by_workspace", ["workspaceId"])
+    .index("by_workspace_role", ["workspaceId", "role"]),
+
+  // Sessions table
+  sessions: defineTable({
+    userId: v.id("users"),
+    token: v.string(),
+    expiresAt: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_user", ["userId"]),
+
   // Workspaces table
   workspaces: defineTable({
     name: v.string(),
@@ -41,26 +69,6 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_slug", ["slug"]),
 
-  // Users table
-  users: defineTable({
-    email: v.string(),
-    name: v.optional(v.string()),
-    role: v.union(v.literal("advisor"), v.literal("staff"), v.literal("client")),
-    workspaceId: v.id("workspaces"),
-    status: v.union(v.literal("active"), v.literal("pending"), v.literal("suspended")),
-    permissions: v.optional(v.array(v.string())), // custom permissions override
-    lastActiveAt: v.optional(v.number()),
-    profile: v.object({
-      firstName: v.string(),
-      lastName: v.string(),
-      avatar: v.optional(v.string()),
-      phone: v.optional(v.string()),
-    }),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  }).index("by_email", ["email"])
-    .index("by_workspace", ["workspaceId"])
-    .index("by_workspace_role", ["workspaceId", "role"]),
 
   // Clients table
   clients: defineTable({
@@ -207,8 +215,10 @@ export default defineSchema({
   magicLinks: defineTable({
     email: v.string(),
     token: v.string(),
+    workspaceSlug: v.optional(v.string()),
     workspaceId: v.optional(v.id("workspaces")),
     expiresAt: v.number(),
+    used: v.boolean(),
     usedAt: v.optional(v.number()),
     createdAt: v.number(),
   }).index("by_token", ["token"])
@@ -247,7 +257,7 @@ export default defineSchema({
     action: v.string(),
     resourceType: v.string(),
     resourceId: v.string(),
-    userId: v.id("users"),
+    userId: v.optional(v.id("users")),
     workspaceId: v.id("workspaces"),
     details: v.any(),
     ipAddress: v.optional(v.string()),

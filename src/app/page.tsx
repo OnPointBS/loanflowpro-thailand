@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Mail, Lock, ArrowRight, CheckCircle, Building2, Users } from "lucide-react";
 
 export default function LoginPage() {
-  const { sendMagicLink, createWorkspace, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const [step, setStep] = useState<"email" | "workspace" | "new-workspace">("email");
   const [email, setEmail] = useState("");
   const [workspaceSlug, setWorkspaceSlug] = useState("");
@@ -27,7 +27,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await sendMagicLink(email, workspaceSlug);
+      await login(email, workspaceSlug);
       setStep("email");
       // Show success message
     } catch (err) {
@@ -48,7 +48,7 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await createWorkspace(email, workspaceName, name, firstName, lastName);
+      // For now, just show success message
       setStep("email");
       // Show success message
     } catch (err) {
