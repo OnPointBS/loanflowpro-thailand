@@ -45,7 +45,7 @@ export default function LoanFileDetailPage() {
     try {
       await updateLoanFile({
         loanFileId,
-        status: newStatus as any,
+        status: newStatus as string,
       });
     } catch (error) {
       console.error("Error updating status:", error);
@@ -85,7 +85,7 @@ export default function LoanFileDetailPage() {
       <div className="text-center py-12">
         <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Loan file not found</h3>
-        <p className="text-gray-500 mb-6">The loan file you're looking for doesn't exist.</p>
+        <p className="text-gray-500 mb-6">The loan file you&apos;re looking for doesn&apos;t exist.</p>
         <Link href="/app/loan-files">
           <Button>
             <ArrowLeft className="w-4 h-4 mr-2" />

@@ -8,7 +8,7 @@ export const getLoanTypes = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("loanTypes")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .filter((q) => q.eq(q.field("isActive"), true))
       .collect();
   },

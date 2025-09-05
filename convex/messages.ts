@@ -8,7 +8,7 @@ export const getMessagesByLoanFile = query({
   handler: async (ctx, { loanFileId }) => {
     return await ctx.db
       .query("messages")
-      .withIndex("by_loan_file", (q) => q.eq("loanFileId", loanFileId))
+      .filter((q) => q.eq(q.field("loanFileId"), loanFileId))
       .order("desc")
       .collect();
   },
@@ -20,7 +20,7 @@ export const getMessagesByThread = query({
   handler: async (ctx, { threadId }) => {
     return await ctx.db
       .query("messages")
-      .withIndex("by_thread", (q) => q.eq("threadId", threadId))
+      .filter((q) => q.eq(q.field("threadId"), threadId))
       .order("asc")
       .collect();
   },
@@ -124,7 +124,7 @@ export const deleteMessage = mutation({
     const loanFile = await ctx.db.get(message.loanFileId);
     if (loanFile) {
       await ctx.db.patch(message.loanFileId, {
-        messages: loanFile.messages.filter(id => id !== messageId),
+        messages: loanFile.messages.filter((id: Id<"messages">) => id !== messageId),
         updatedAt: Date.now(),
       });
     }
@@ -156,7 +156,7 @@ export const getRecentMessages = query({
   handler: async (ctx, { workspaceId, limit = 50 }) => {
     return await ctx.db
       .query("messages")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .order("desc")
       .take(limit);
   },
@@ -168,7 +168,7 @@ export const getMessageThreads = query({
   handler: async (ctx, { loanFileId }) => {
     const messages = await ctx.db
       .query("messages")
-      .withIndex("by_loan_file", (q) => q.eq("loanFileId", loanFileId))
+      .filter((q) => q.eq(q.field("loanFileId"), loanFileId))
       .collect();
 
     // Group messages by thread
@@ -181,8 +181,8 @@ export const getMessageThreads = query({
     }, {} as Record<string, typeof messages>);
 
     // Sort messages within each thread by creation time
-    Object.values(threads).forEach(thread => {
-      thread.sort((a, b) => a.createdAt - b.createdAt);
+    Object.values(threads).forEach((thread: any) => {
+      (thread as any[]).sort((a, b) => a.createdAt - b.createdAt);
     });
 
     return threads;

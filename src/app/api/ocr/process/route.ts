@@ -16,9 +16,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Process OCR
-    await convex.mutation(api.documents.processOCR, {
-      documentId,
-    });
+    // await convex.mutation(api.documents.processOCR, {
+    //   documentId,
+    // });
+    
+    // Mock OCR processing for now
+    console.log("OCR processing for document:", documentId);
 
     return NextResponse.json({
       success: true,

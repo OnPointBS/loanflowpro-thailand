@@ -76,7 +76,7 @@ export const verifyOTP = mutation({
     // Find valid OTP
     const otpRecord = await ctx.db
       .query("otpTokens")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .filter((q) => q.eq(q.field("email"), email))
       .filter((q) => q.eq(q.field("token"), otp))
       .filter((q) => q.eq(q.field("used"), false))
       .filter((q) => q.gt(q.field("expiresAt"), Date.now()))
@@ -92,7 +92,7 @@ export const verifyOTP = mutation({
     // Check if user exists
     let user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .filter((q) => q.eq(q.field("email"), email))
       .first();
 
     let workspaceId: Id<"workspaces">;
@@ -237,7 +237,7 @@ export const getWorkspaceUsers = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("users")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
   },
 });
@@ -259,7 +259,7 @@ export const sendMagicLink = mutation({
       // Check if user exists
       let user = await ctx.db
         .query("users")
-        .withIndex("by_email", (q) => q.eq("email", email))
+        .filter((q) => q.eq(q.field("email"), email))
         .first();
 
       let workspaceId: Id<"workspaces"> | undefined;
@@ -270,7 +270,7 @@ export const sendMagicLink = mutation({
         // Find workspace by slug
         const workspace = await ctx.db
           .query("workspaces")
-          .withIndex("by_slug", (q) => q.eq("slug", workspaceSlug))
+          .filter((q) => q.eq(q.field("slug"), workspaceSlug))
           .first();
         
         if (workspace) {
@@ -346,7 +346,7 @@ export const verifyMagicLink = mutation({
       // Find magic link
       const magicLink = await ctx.db
         .query("magicLinks")
-        .withIndex("by_token", (q) => q.eq("token", token))
+        .filter((q) => q.eq(q.field("token"), token))
         .first();
 
       if (!magicLink) {
@@ -371,7 +371,7 @@ export const verifyMagicLink = mutation({
       // Find or create user
       let user = await ctx.db
         .query("users")
-        .withIndex("by_email", (q) => q.eq("email", magicLink.email))
+        .filter((q) => q.eq(q.field("email"), magicLink.email))
         .first();
 
       let workspaceId = magicLink.workspaceId;
@@ -465,7 +465,7 @@ export const createWorkspaceAndUser = mutation({
       // Check if slug is unique
       const existingWorkspace = await ctx.db
         .query("workspaces")
-        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .filter((q) => q.eq(q.field("slug"), slug))
         .first();
 
       if (existingWorkspace) {
@@ -537,9 +537,10 @@ export const createWorkspaceAndUser = mutation({
       });
 
       // Create default loan types
-      await ctx.runMutation(api.loanTypes.createDefaultLoanTypes, {
-        workspaceId,
-      });
+      // Note: This would need to be implemented in loanTypes.ts
+      // await ctx.runMutation(api.loanTypes.createDefaultLoanTypes, {
+      //   workspaceId,
+      // });
 
       return {
         success: true,
@@ -581,7 +582,7 @@ export const canUserAccessWorkspace = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_email", (q) => q.eq("email", identity.email))
+      .filter((q) => q.eq(q.field("email"), identity.email))
       .first();
 
     if (!user) {

@@ -9,7 +9,7 @@ export const getSubscription = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("subscriptions")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .first();
   },
 });
@@ -31,7 +31,7 @@ export const updateSubscription = mutation({
   handler: async (ctx, { workspaceId, plan, status, seats, stripeData }) => {
     const existing = await ctx.db
       .query("subscriptions")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .first();
 
     if (existing) {
@@ -88,7 +88,7 @@ export const updateUsage = mutation({
   handler: async (ctx, { workspaceId, ...usage }) => {
     const subscription = await ctx.db
       .query("subscriptions")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .first();
 
     if (subscription) {
@@ -111,7 +111,7 @@ export const getUsage = query({
   handler: async (ctx, { workspaceId }) => {
     const subscription = await ctx.db
       .query("subscriptions")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .first();
 
     if (!subscription) {
@@ -140,7 +140,7 @@ export const checkLimits = query({
   handler: async (ctx, { workspaceId }) => {
     const subscription = await ctx.db
       .query("subscriptions")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .first();
 
     if (!subscription) {
@@ -165,7 +165,7 @@ export const checkLimits = query({
       enterprise: { maxClients: 500, maxStorage: 50 * 1024 * 1024 * 1024, maxSeats: 50 },
     };
 
-    const planLimits = limits[subscription.plan];
+    const planLimits = limits[subscription.plan as keyof typeof limits];
     const usage = subscription.usage;
 
     const withinLimits = 
@@ -234,7 +234,7 @@ export const createCheckoutSession = mutation({
 
       // Use real Stripe integration
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: "2024-12-18.acacia",
+        apiVersion: "2025-08-27.basil",
       });
 
       // Define pricing based on plan

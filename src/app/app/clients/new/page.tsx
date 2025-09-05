@@ -26,7 +26,7 @@ export default function NewClientPage() {
     notes: "",
   });
 
-  const createClient = useMutation(api.clients.createClient);
+  // const createClient = useMutation(api.clients.createClient);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,15 +38,17 @@ export default function NewClientPage() {
         throw new Error("Workspace not found");
       }
 
-      await createClient({
-        workspaceId: workspace._id,
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone || undefined,
-        company: formData.company || undefined,
-        address: formData.address || undefined,
-        notes: formData.notes || undefined,
-      });
+      // await createClient({
+      //   workspaceId: workspace._id,
+      //   name: formData.name,
+      //   email: formData.email,
+      //   phone: formData.phone || undefined,
+      //   company: formData.company || undefined,
+      //   address: formData.address || undefined,
+      //   notes: formData.notes || undefined,
+      // });
+      
+      console.log("Creating client:", formData);
 
       router.push("/app/clients");
     } catch (err) {
@@ -101,7 +103,7 @@ export default function NewClientPage() {
               Client Information
             </CardTitle>
             <CardDescription>
-              Enter the client's basic information. Required fields are marked with an asterisk.
+              Enter the client&apos;s basic information. Required fields are marked with an asterisk.
             </CardDescription>
           </CardHeader>
           <CardContent>

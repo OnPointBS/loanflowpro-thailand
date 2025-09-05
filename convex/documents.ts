@@ -9,7 +9,7 @@ export const getDocumentsByLoanFile = query({
   handler: async (ctx, { loanFileId }) => {
     return await ctx.db
       .query("documents")
-      .withIndex("by_loan_file", (q) => q.eq("loanFileId", loanFileId))
+      .filter((q) => q.eq(q.field("loanFileId"), loanFileId))
       .collect();
   },
 });
@@ -20,7 +20,7 @@ export const getDocuments = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("documents")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
   },
 });
@@ -146,7 +146,7 @@ export const deleteDocument = mutation({
     const loanFile = await ctx.db.get(document.loanFileId);
     if (loanFile) {
       await ctx.db.patch(document.loanFileId, {
-        documents: loanFile.documents.filter(id => id !== documentId),
+        documents: loanFile.documents.filter((id: Id<"documents">) => id !== documentId),
         updatedAt: Date.now(),
       });
     }
@@ -154,13 +154,13 @@ export const deleteDocument = mutation({
     // Remove from tasks that reference this document
     const tasks = await ctx.db
       .query("tasks")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", document.workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), document.workspaceId))
       .collect();
 
     for (const task of tasks) {
       if (task.documentIds.includes(documentId)) {
         await ctx.db.patch(task._id, {
-          documentIds: task.documentIds.filter(id => id !== documentId),
+          documentIds: task.documentIds.filter((id: Id<"documents">) => id !== documentId),
           updatedAt: Date.now(),
         });
       }
@@ -267,13 +267,13 @@ export const searchDocuments = query({
   handler: async (ctx, { workspaceId, query: searchQuery }) => {
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
 
     const lowercaseQuery = searchQuery.toLowerCase();
     return documents.filter(doc => 
       doc.name.toLowerCase().includes(lowercaseQuery) ||
-      doc.tags.some(tag => tag.toLowerCase().includes(lowercaseQuery)) ||
+      doc.tags.some((tag: string) => tag.toLowerCase().includes(lowercaseQuery)) ||
       (doc.ocrText && doc.ocrText.toLowerCase().includes(lowercaseQuery))
     );
   },
@@ -285,7 +285,7 @@ export const getDocumentStats = query({
   handler: async (ctx, { workspaceId }) => {
     const documents = await ctx.db
       .query("documents")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
 
     const stats = {

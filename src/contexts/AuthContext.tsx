@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { useConvexAuth } from "@convex-dev/auth/react";
+import { Id } from "../../convex/_generated/dataModel";
+import { useAuthActions, useAuthToken } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import { RBACEngine, type User, type Permission, type WorkspaceSettings } from "@/lib/rbac";
 
@@ -36,7 +37,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
+  const { signIn, signOut } = useAuthActions();
+  const token = useAuthToken();
+  const isAuthenticated = !!token;
   const [user, setUser] = useState<User | null>(null);
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -46,12 +49,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const verifyMagicLinkMutation = useMutation(api.auth.verifyMagicLink);
   const createWorkspaceMutation = useMutation(api.auth.createWorkspaceAndUser);
   const getUserPermissions = useQuery(api.auth.getUserPermissions, 
-    user ? { userId: user._id as any } : "skip"
+    user ? { userId: user._id as Id<"users"> } : "skip"
   );
 
   // Get current user and workspace when authenticated
   useEffect(() => {
-    if (isAuthenticated && !authLoading) {
+    if (isAuthenticated) {
       // In a real implementation, you'd get user data from Convex Auth
       // For now, we'll use the existing logic
       const storedUser = localStorage.getItem("user");
@@ -74,13 +77,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       
       setIsLoading(false);
-    } else if (!isAuthenticated && !authLoading) {
+    } else {
       setUser(null);
       setWorkspace(null);
       setPermissions([]);
       setIsLoading(false);
     }
-  }, [isAuthenticated, authLoading]);
+  }, [isAuthenticated]);
 
   // Update permissions when user or workspace changes
   useEffect(() => {
@@ -151,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    await signOut();
     setUser(null);
     setWorkspace(null);
     setPermissions([]);
@@ -186,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     workspace,
     permissions,
-    isLoading: isLoading || authLoading,
+    isLoading,
     isAuthenticated,
     sendMagicLink,
     verifyMagicLink,

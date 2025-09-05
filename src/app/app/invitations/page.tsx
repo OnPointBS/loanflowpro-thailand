@@ -23,7 +23,7 @@ export default function InvitationsPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">You don't have permission to manage invitations</p>
+          <p className="text-gray-600">You don&apos;t have permission to manage invitations</p>
         </div>
       </div>
     );

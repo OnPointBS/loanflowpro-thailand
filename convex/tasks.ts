@@ -8,7 +8,7 @@ export const getTasksByLoanFile = query({
   handler: async (ctx, { loanFileId }) => {
     return await ctx.db
       .query("tasks")
-      .withIndex("by_loan_file", (q) => q.eq("loanFileId", loanFileId))
+      .filter((q) => q.eq(q.field("loanFileId"), loanFileId))
       .collect();
   },
 });
@@ -19,7 +19,7 @@ export const getTasks = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("tasks")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
   },
 });
@@ -31,7 +31,7 @@ export const getOverdueTasks = query({
     const now = Date.now();
     return await ctx.db
       .query("tasks")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .filter((q) => 
         q.and(
           q.lt(q.field("dueDate"), now),
@@ -172,7 +172,7 @@ export const deleteTask = mutation({
     const loanFile = await ctx.db.get(task.loanFileId);
     if (loanFile) {
       await ctx.db.patch(task.loanFileId, {
-        tasks: loanFile.tasks.filter(id => id !== taskId),
+        tasks: loanFile.tasks.filter((id: Id<"tasks">) => id !== taskId),
         updatedAt: Date.now(),
       });
     }
@@ -224,7 +224,7 @@ export const getTaskStats = query({
   handler: async (ctx, { workspaceId }) => {
     const tasks = await ctx.db
       .query("tasks")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
 
     const stats = {

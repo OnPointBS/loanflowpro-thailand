@@ -29,7 +29,7 @@ export const sendClientInvitation = mutation({
       // Check if user is already in the workspace
       const existingUser = await ctx.db
         .query("users")
-        .withIndex("by_email", (q) => q.eq("email", email))
+        .filter((q) => q.eq(q.field("email"), email))
         .first();
 
       if (existingUser && existingUser.workspaceId === workspaceId) {
@@ -39,7 +39,7 @@ export const sendClientInvitation = mutation({
       // Check if there's already a pending invitation
       const existingInvitation = await ctx.db
         .query("clientInvitations")
-        .withIndex("by_email", (q) => q.eq("email", email))
+        .filter((q) => q.eq(q.field("email"), email))
         .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
         .filter((q) => q.eq(q.field("status"), "pending"))
         .first();
@@ -159,7 +159,7 @@ export const acceptClientInvitation = mutation({
       // Find invitation
       const invitation = await ctx.db
         .query("clientInvitations")
-        .withIndex("by_token", (q) => q.eq("token", token))
+        .filter((q) => q.eq(q.field("token"), token))
         .first();
 
       if (!invitation) {
@@ -189,7 +189,7 @@ export const acceptClientInvitation = mutation({
       // Check if user already exists
       let user = await ctx.db
         .query("users")
-        .withIndex("by_email", (q) => q.eq("email", invitation.email))
+        .filter((q) => q.eq(q.field("email"), invitation.email))
         .first();
 
       if (user) {
@@ -276,7 +276,7 @@ export const getPendingInvitations = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("clientInvitations")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .filter((q) => q.eq(q.field("status"), "pending"))
       .collect();
   },

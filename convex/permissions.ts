@@ -193,7 +193,7 @@ export const getWorkspaceUsersWithPermissions = query({
   handler: async (ctx, { workspaceId }) => {
     const users = await ctx.db
       .query("users")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
 
     const workspace = await ctx.db.get(workspaceId);

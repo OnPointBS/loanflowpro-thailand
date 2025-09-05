@@ -113,7 +113,7 @@ export default function WorkspacesPage() {
             Select Workspace
           </h1>
           <p className="text-gray-600">
-            Choose which workspace you'd like to access
+            Choose which workspace you&apos;d like to access
           </p>
         </div>
 

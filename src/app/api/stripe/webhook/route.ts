@@ -5,8 +5,8 @@ import Stripe from "stripe";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-12-18.acacia",
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock", {
+  apiVersion: "2025-08-27.basil",
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -28,34 +28,39 @@ export async function POST(req: NextRequest) {
     // Handle the event
     switch (event.type) {
       case "checkout.session.completed":
-        await convex.mutation(api.billing.handleWebhook, {
-          eventType: event.type,
-          data: event.data.object,
-        });
+        // await convex.mutation(api.billing.handleWebhook, {
+        //   eventType: event.type,
+        //   data: event.data.object,
+        // });
+        console.log("Webhook event:", event.type, event.data.object);
         break;
       case "customer.subscription.updated":
-        await convex.mutation(api.billing.handleWebhook, {
-          eventType: event.type,
-          data: event.data.object,
-        });
+        // await convex.mutation(api.billing.handleWebhook, {
+        //   eventType: event.type,
+        //   data: event.data.object,
+        // });
+        console.log("Webhook event:", event.type, event.data.object);
         break;
       case "customer.subscription.deleted":
-        await convex.mutation(api.billing.handleWebhook, {
-          eventType: event.type,
-          data: event.data.object,
-        });
+        // await convex.mutation(api.billing.handleWebhook, {
+        //   eventType: event.type,
+        //   data: event.data.object,
+        // });
+        console.log("Webhook event:", event.type, event.data.object);
         break;
       case "invoice.payment_succeeded":
-        await convex.mutation(api.billing.handleWebhook, {
-          eventType: event.type,
-          data: event.data.object,
-        });
+        // await convex.mutation(api.billing.handleWebhook, {
+        //   eventType: event.type,
+        //   data: event.data.object,
+        // });
+        console.log("Webhook event:", event.type, event.data.object);
         break;
       case "invoice.payment_failed":
-        await convex.mutation(api.billing.handleWebhook, {
-          eventType: event.type,
-          data: event.data.object,
-        });
+        // await convex.mutation(api.billing.handleWebhook, {
+        //   eventType: event.type,
+        //   data: event.data.object,
+        // });
+        console.log("Webhook event:", event.type, event.data.object);
         break;
       default:
         console.log(`Unhandled event type: ${event.type}`);

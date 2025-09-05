@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -36,7 +37,7 @@ export function ClientInvitationManager({ workspaceId, canInvite }: ClientInvita
   const resendInvitation = useMutation(api.clientInvitations.resendInvitation);
 
   const pendingInvitations = useQuery(api.clientInvitations.getPendingInvitations, {
-    workspaceId: workspaceId as any,
+    workspaceId: workspaceId as Id<"workspaces">,
   });
 
   const handleSendInvitation = async (e: React.FormEvent) => {
@@ -49,7 +50,7 @@ export function ClientInvitationManager({ workspaceId, canInvite }: ClientInvita
     try {
       await sendInvitation({
         email,
-        workspaceId: workspaceId as any,
+        workspaceId: workspaceId as Id<"workspaces">,
         invitedBy: "current-user-id", // In real app, get from auth context
         message: message.trim() || undefined,
       });
@@ -65,7 +66,7 @@ export function ClientInvitationManager({ workspaceId, canInvite }: ClientInvita
 
   const handleCancelInvitation = async (invitationId: string) => {
     try {
-      await cancelInvitation({ invitationId: invitationId as any });
+      await cancelInvitation({ invitationId: invitationId as Id<"clientInvitations"> });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to cancel invitation");
     }
@@ -73,7 +74,7 @@ export function ClientInvitationManager({ workspaceId, canInvite }: ClientInvita
 
   const handleResendInvitation = async (invitationId: string) => {
     try {
-      await resendInvitation({ invitationId: invitationId as any });
+      await resendInvitation({ invitationId: invitationId as Id<"clientInvitations"> });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to resend invitation");
     }
@@ -128,7 +129,7 @@ export function ClientInvitationManager({ workspaceId, canInvite }: ClientInvita
             Client Invitations
           </CardTitle>
           <CardDescription>
-            You don't have permission to invite clients
+            You don&apos;t have permission to invite clients
           </CardDescription>
         </CardHeader>
       </Card>
@@ -230,7 +231,7 @@ export function ClientInvitationManager({ workspaceId, canInvite }: ClientInvita
                     <div className="text-sm text-gray-600">
                       Sent {formatDate(invitation.createdAt)}
                       {invitation.message && (
-                        <span className="ml-2 italic">• "{invitation.message}"</span>
+                        <span className="ml-2 italic">• &quot;{invitation.message}&quot;</span>
                       )}
                     </div>
                   </div>

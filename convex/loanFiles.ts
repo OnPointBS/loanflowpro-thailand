@@ -8,7 +8,7 @@ export const getLoanFilesByClient = query({
   handler: async (ctx, { clientId }) => {
     return await ctx.db
       .query("loanFiles")
-      .withIndex("by_client", (q) => q.eq("clientId", clientId))
+      .filter((q) => q.eq(q.field("clientId"), clientId))
       .collect();
   },
 });
@@ -27,7 +27,7 @@ export const getLoanFiles = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("loanFiles")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
   },
 });
@@ -163,7 +163,7 @@ export const deleteLoanFile = mutation({
     const client = await ctx.db.get(loanFile.clientId);
     if (client) {
       await ctx.db.patch(loanFile.clientId, {
-        loanFiles: client.loanFiles.filter(id => id !== loanFileId),
+        loanFiles: client.loanFiles.filter((id: Id<"loanFiles">) => id !== loanFileId),
         updatedAt: Date.now(),
       });
     }
@@ -210,17 +210,17 @@ export const getLoanFileDetails = query({
 
     // Get tasks
     const tasks = await Promise.all(
-      loanFile.tasks.map(taskId => ctx.db.get(taskId))
+      loanFile.tasks.map((taskId: Id<"tasks">) => ctx.db.get(taskId))
     );
 
     // Get documents
     const documents = await Promise.all(
-      loanFile.documents.map(docId => ctx.db.get(docId))
+      loanFile.documents.map((docId: Id<"documents">) => ctx.db.get(docId))
     );
 
     // Get messages
     const messages = await Promise.all(
-      loanFile.messages.map(messageId => ctx.db.get(messageId))
+      loanFile.messages.map((messageId: Id<"messages">) => ctx.db.get(messageId))
     );
 
     return {

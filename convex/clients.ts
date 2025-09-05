@@ -8,7 +8,7 @@ export const getClients = query({
   handler: async (ctx, { workspaceId }) => {
     return await ctx.db
       .query("clients")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
   },
 });
@@ -157,7 +157,7 @@ export const searchClients = query({
   handler: async (ctx, { workspaceId, query: searchQuery }) => {
     const clients = await ctx.db
       .query("clients")
-      .withIndex("by_workspace", (q) => q.eq("workspaceId", workspaceId))
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
       .collect();
 
     const lowercaseQuery = searchQuery.toLowerCase();

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { Id } from "../../../../convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../../convex/_generated/api";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
@@ -48,12 +49,12 @@ export default function NewLoanFilePage() {
       }
 
       const loanFileId = await createLoanFile({
-        clientId: formData.clientId as any,
+        clientId: formData.clientId as Id<"clients">,
         workspaceId: workspace._id,
         type: formData.type,
         amount: formData.amount ? parseFloat(formData.amount) : undefined,
         purpose: formData.purpose || undefined,
-        priority: formData.priority as any,
+        priority: formData.priority as string,
         dueDate: formData.dueDate ? new Date(formData.dueDate).getTime() : undefined,
       });
 
