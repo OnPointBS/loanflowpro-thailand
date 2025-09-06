@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -18,7 +18,7 @@ import {
   Building2
 } from "lucide-react";
 
-export default function SignInWidgetPage() {
+function SignInWidgetContent() {
   const searchParams = useSearchParams();
   const workspaceSlug = searchParams.get("workspace");
   const domain = searchParams.get("domain");
@@ -191,5 +191,20 @@ export default function SignInWidgetPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function SignInWidgetPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-[#D4AF37] mx-auto mb-4" />
+          <p className="text-black font-semibold">Loading...</p>
+        </div>
+      </div>
+    }>
+      <SignInWidgetContent />
+    </Suspense>
   );
 }
