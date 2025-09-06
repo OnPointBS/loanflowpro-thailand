@@ -24,6 +24,7 @@ import type * as documents from "../documents.js";
 import type * as loanFiles from "../loanFiles.js";
 import type * as loanTypes from "../loanTypes.js";
 import type * as messages from "../messages.js";
+import type * as notifications from "../notifications.js";
 import type * as permissions from "../permissions.js";
 import type * as tasks from "../tasks.js";
 import type * as userInvitations from "../userInvitations.js";
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   loanFiles: typeof loanFiles;
   loanTypes: typeof loanTypes;
   messages: typeof messages;
+  notifications: typeof notifications;
   permissions: typeof permissions;
   tasks: typeof tasks;
   userInvitations: typeof userInvitations;

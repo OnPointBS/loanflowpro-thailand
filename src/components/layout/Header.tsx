@@ -5,8 +5,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { NotificationBell } from "@/components/ui/NotificationBell";
 import {
-  Bell,
   Search,
   User,
   LogOut,
@@ -49,10 +49,7 @@ export function Header() {
           )}
 
           {/* Notifications */}
-          <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-          </button>
+          <NotificationBell />
 
           {/* Profile dropdown */}
           <div className="relative">

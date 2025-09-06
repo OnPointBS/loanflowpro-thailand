@@ -17,6 +17,23 @@ export default defineSchema({
       avatar: v.optional(v.string()),
       phone: v.optional(v.string()),
     }),
+    notificationSettings: v.object({
+      email: v.boolean(),
+      inApp: v.boolean(),
+      types: v.object({
+        taskAssigned: v.boolean(),
+        taskCompleted: v.boolean(),
+        taskOverdue: v.boolean(),
+        clientAdded: v.boolean(),
+        clientUpdated: v.boolean(),
+        loanFileStatusChange: v.boolean(),
+        documentUploaded: v.boolean(),
+        messageReceived: v.boolean(),
+        invitationReceived: v.boolean(),
+        systemAlert: v.boolean(),
+      }),
+      frequency: v.union(v.literal("immediate"), v.literal("hourly"), v.literal("daily")),
+    }),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -331,4 +348,38 @@ export default defineSchema({
     .index("by_client", ["clientId"])
     .index("by_loan_file", ["loanFileId"])
     .index("by_category", ["category"]),
+
+  // Notifications table
+  notifications: defineTable({
+    userId: v.id("users"),
+    workspaceId: v.id("workspaces"),
+    type: v.union(
+      v.literal("taskAssigned"),
+      v.literal("taskCompleted"),
+      v.literal("taskOverdue"),
+      v.literal("clientAdded"),
+      v.literal("clientUpdated"),
+      v.literal("loanFileStatusChange"),
+      v.literal("documentUploaded"),
+      v.literal("messageReceived"),
+      v.literal("invitationReceived"),
+      v.literal("systemAlert")
+    ),
+    title: v.string(),
+    message: v.string(),
+    read: v.boolean(),
+    readAt: v.optional(v.number()),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
+    actionUrl: v.optional(v.string()), // URL to navigate to when clicked
+    metadata: v.optional(v.any()), // Additional data for the notification
+    relatedResourceType: v.optional(v.string()), // "task", "client", "loanFile", etc.
+    relatedResourceId: v.optional(v.string()), // ID of the related resource
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_workspace", ["workspaceId"])
+    .index("by_user_unread", ["userId", "read"])
+    .index("by_type", ["type"])
+    .index("by_created_at", ["createdAt"]),
 });

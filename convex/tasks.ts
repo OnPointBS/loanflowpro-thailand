@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Doc, Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 
 // Create a new task
 export const createTask = mutation({
@@ -25,11 +26,28 @@ export const createTask = mutation({
     instructions: v.optional(v.string())
   },
   handler: async (ctx, args) => {
-    return await ctx.db.insert("tasks", {
+    const taskId = await ctx.db.insert("tasks", {
       ...args,
       createdAt: Date.now(),
       updatedAt: Date.now()
     });
+
+    // Create notification for assigned user if it's a specific user
+    if (typeof args.assignedTo === "string" && args.assignedTo !== "staff") {
+      await ctx.runMutation(api.notifications.createNotification, {
+        userId: args.assignedTo as Id<"users">,
+        workspaceId: args.workspaceId,
+        type: "taskAssigned",
+        title: "New Task Assigned",
+        message: `You have been assigned a new task: "${args.title}"`,
+        priority: args.priority,
+        actionUrl: `/app/tasks/${taskId}`,
+        relatedResourceType: "task",
+        relatedResourceId: taskId,
+      });
+    }
+
+    return taskId;
   },
 });
 
@@ -199,13 +217,40 @@ export const completeTask = mutation({
     notes: v.optional(v.string())
   },
   handler: async (ctx, { taskId, completedBy, notes }) => {
-    return await ctx.db.patch(taskId, {
+    const task = await ctx.db.get(taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    await ctx.db.patch(taskId, {
       status: "completed",
       completedAt: Date.now(),
       completedBy,
       notes,
       updatedAt: Date.now()
     });
+
+    // Create notification for workspace users about task completion
+    const workspaceUsers = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("workspaceId"), task.workspaceId))
+      .collect();
+
+    if (workspaceUsers.length > 0) {
+      await ctx.runMutation(api.notifications.createNotificationForUsers, {
+        userIds: workspaceUsers.map(u => u._id),
+        workspaceId: task.workspaceId,
+        type: "taskCompleted",
+        title: "Task Completed",
+        message: `Task "${task.title}" has been completed.`,
+        priority: "low",
+        actionUrl: `/app/tasks/${taskId}`,
+        relatedResourceType: "task",
+        relatedResourceId: taskId,
+      });
+    }
+
+    return taskId;
   },
 });
 

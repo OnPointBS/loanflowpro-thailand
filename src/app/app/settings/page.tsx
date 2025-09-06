@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -22,10 +23,13 @@ import {
   Bell,
   Key,
   Trash2,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 
 export default function SettingsPage() {
   const { workspace } = useWorkspace();
+  const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -48,14 +52,40 @@ export default function SettingsPage() {
       requireApproval: workspace?.settings?.requireApproval || false,
     },
     notifications: {
-      emailNotifications: true,
-      taskReminders: true,
-      clientUpdates: true,
-      systemAlerts: true,
+      email: true,
+      inApp: true,
+      frequency: "immediate" as "immediate" | "hourly" | "daily",
+      types: {
+        taskAssigned: true,
+        taskCompleted: true,
+        taskOverdue: true,
+        clientAdded: true,
+        clientUpdated: true,
+        loanFileStatusChange: true,
+        documentUploaded: true,
+        messageReceived: true,
+        invitationReceived: true,
+        systemAlert: true,
+      },
     },
   });
 
   const updateWorkspace = useMutation(api.auth.updateWorkspace);
+  const notificationSettings = useQuery(
+    api.notifications.getUserNotificationSettings,
+    user ? { userId: user._id } : "skip"
+  );
+  const updateNotificationSettings = useMutation(api.notifications.updateNotificationSettings);
+
+  // Load notification settings when they're available
+  useEffect(() => {
+    if (notificationSettings) {
+      setSettings(prev => ({
+        ...prev,
+        notifications: notificationSettings,
+      }));
+    }
+  }, [notificationSettings]);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -67,6 +97,7 @@ export default function SettingsPage() {
         throw new Error("Workspace not found");
       }
 
+      // Update workspace settings
       await updateWorkspace({
         workspaceId: workspace._id,
         updates: {
@@ -86,6 +117,14 @@ export default function SettingsPage() {
           },
         },
       });
+
+      // Update notification settings
+      if (user) {
+        await updateNotificationSettings({
+          userId: user._id,
+          settings: settings.notifications,
+        });
+      }
 
       setSuccess("Settings saved successfully!");
     } catch (err) {
@@ -115,6 +154,22 @@ export default function SettingsPage() {
     "Asia/Tokyo",
     "Asia/Shanghai",
   ];
+
+  const getNotificationDescription = (type: string) => {
+    const descriptions: Record<string, string> = {
+      taskAssigned: "When a task is assigned to you",
+      taskCompleted: "When a task is marked as completed",
+      taskOverdue: "When a task becomes overdue",
+      clientAdded: "When a new client is added",
+      clientUpdated: "When client information is updated",
+      loanFileStatusChange: "When loan file status changes",
+      documentUploaded: "When documents are uploaded",
+      messageReceived: "When you receive a message",
+      invitationReceived: "When you receive an invitation",
+      systemAlert: "Important system notifications",
+    };
+    return descriptions[type] || "Notification type";
+  };
 
   const dateFormats = [
     { value: "MM/DD/YYYY", label: "MM/DD/YYYY" },
@@ -336,80 +391,99 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center">
             <Bell className="w-5 h-5 mr-2" />
-            Notifications
+            Notification Preferences
           </CardTitle>
           <CardDescription>
-            Configure your notification preferences
+            Configure how and when you receive notifications
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-gray-900">Email Notifications</h4>
-              <p className="text-sm text-gray-500">
-                Receive notifications via email
-              </p>
+        <CardContent className="space-y-6">
+          {/* General Settings */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 text-lg">General Settings</h4>
+            
+            <div className="flex items-center justify-between">
+              <div>
+                <h5 className="font-bold text-slate-900">Email Notifications</h5>
+                <p className="text-sm text-slate-600">
+                  Receive notifications via email
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.notifications.email}
+                  onChange={(e) => handleChange("notifications", "email", e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+              </label>
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.emailNotifications}
-                onChange={(e) => handleChange("notifications", "emailNotifications", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
-            </label>
+
+            <div className="flex items-center justify-between">
+              <div>
+                <h5 className="font-bold text-slate-900">In-App Notifications</h5>
+                <p className="text-sm text-slate-600">
+                  Show notifications in the application
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={settings.notifications.inApp}
+                  onChange={(e) => handleChange("notifications", "inApp", e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-900 mb-2">
+                Notification Frequency
+              </label>
+              <select
+                value={settings.notifications.frequency}
+                onChange={(e) => handleChange("notifications", "frequency", e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none"
+              >
+                <option value="immediate">Immediate</option>
+                <option value="hourly">Hourly Digest</option>
+                <option value="daily">Daily Digest</option>
+              </select>
+            </div>
           </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-gray-900">Task Reminders</h4>
-              <p className="text-sm text-gray-500">
-                Get reminded about upcoming tasks
-              </p>
+
+          {/* Notification Types */}
+          <div className="space-y-4">
+            <h4 className="font-bold text-slate-900 text-lg">Notification Types</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.entries(settings.notifications.types).map(([key, value]) => (
+                <div key={key} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                  <div>
+                    <h5 className="font-bold text-slate-900 capitalize">
+                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                    </h5>
+                    <p className="text-xs text-slate-600">
+                      {getNotificationDescription(key)}
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={value}
+                      onChange={(e) => handleChange("notifications", "types", {
+                        ...settings.notifications.types,
+                        [key]: e.target.checked,
+                      })}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#D4AF37]"></div>
+                  </label>
+                </div>
+              ))}
             </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.taskReminders}
-                onChange={(e) => handleChange("notifications", "taskReminders", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
-            </label>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-gray-900">Client Updates</h4>
-              <p className="text-sm text-gray-500">
-                Notify when clients update their information
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.clientUpdates}
-                onChange={(e) => handleChange("notifications", "clientUpdates", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
-            </label>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium text-gray-900">System Alerts</h4>
-              <p className="text-sm text-gray-500">
-                Receive important system notifications
-              </p>
-            </div>
-            <label className="relative inline-flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={settings.notifications.systemAlerts}
-                onChange={(e) => handleChange("notifications", "systemAlerts", e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-[#D4AF37]/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#D4AF37]"></div>
-            </label>
           </div>
         </CardContent>
       </Card>

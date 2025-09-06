@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 
 // Get all clients for a workspace
 export const getClients = query({
@@ -60,6 +61,26 @@ export const createClient = mutation({
       createdAt: Date.now(),
     });
 
+    // Create notification for all workspace users
+    const workspaceUsers = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("workspaceId"), args.workspaceId))
+      .collect();
+
+    if (workspaceUsers.length > 0) {
+      await ctx.runMutation(api.notifications.createNotificationForUsers, {
+        userIds: workspaceUsers.map(u => u._id),
+        workspaceId: args.workspaceId,
+        type: "clientAdded",
+        title: "New Client Added",
+        message: `A new client "${args.name}" has been added to the workspace.`,
+        priority: "medium",
+        actionUrl: `/app/clients/${clientId}`,
+        relatedResourceType: "client",
+        relatedResourceId: clientId,
+      });
+    }
+
     return clientId;
   },
 });
@@ -116,6 +137,26 @@ export const updateClient = mutation({
       details: updates,
       createdAt: Date.now(),
     });
+
+    // Create notification for all workspace users
+    const workspaceUsers = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("workspaceId"), client.workspaceId))
+      .collect();
+
+    if (workspaceUsers.length > 0) {
+      await ctx.runMutation(api.notifications.createNotificationForUsers, {
+        userIds: workspaceUsers.map(u => u._id),
+        workspaceId: client.workspaceId,
+        type: "clientUpdated",
+        title: "Client Updated",
+        message: `Client "${client.name}" information has been updated.`,
+        priority: "low",
+        actionUrl: `/app/clients/${clientId}`,
+        relatedResourceType: "client",
+        relatedResourceId: clientId,
+      });
+    }
   },
 });
 
