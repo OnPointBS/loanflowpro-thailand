@@ -24,7 +24,8 @@ import {
   Shield,
   Handshake,
   Eye,
-  EyeOff
+  EyeOff,
+  ExternalLink
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -150,6 +151,12 @@ export function UserInvitationManager({ workspaceId, canInvite }: UserInvitation
     } catch (error) {
       console.error("Error canceling invitation:", error);
     }
+  };
+
+  const handlePreviewPortal = (invitation: UserInvitation) => {
+    // Navigate to the appropriate portal preview based on role
+    const previewUrl = `/app/invitations/preview/${invitation.role}/${invitation._id}`;
+    window.open(previewUrl, '_blank');
   };
 
   const getRoleIcon = (role: string) => {
@@ -448,6 +455,17 @@ export function UserInvitationManager({ workspaceId, canInvite }: UserInvitation
                         <span>{invitation.status}</span>
                       </div>
                     </Badge>
+
+                    {/* Portal Preview Button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handlePreviewPortal(invitation)}
+                      className="text-[#D4AF37] hover:text-[#B8941F] border-[#D4AF37] hover:border-[#B8941F]"
+                    >
+                      <ExternalLink className="w-4 h-4 mr-1" />
+                      Preview Portal
+                    </Button>
 
                     {invitation.status === "pending" && (
                       <div className="flex items-center space-x-1">
