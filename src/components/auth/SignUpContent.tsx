@@ -29,9 +29,8 @@ export default function SignUpContent() {
     setMessageType("");
 
     try {
-      // For now, we'll use the login function which will create a workspace if needed
-      // In a real implementation, you might want a separate signup flow
-      await login(email, workspaceName || undefined);
+      // Use the login function with workspace name to create new workspace
+      await login(email, workspaceName);
       setMessage("Magic link sent! Check your email and click the link to complete your registration.");
       setMessageType("success");
     } catch (error) {
