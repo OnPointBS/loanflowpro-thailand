@@ -382,4 +382,41 @@ export default defineSchema({
     .index("by_user_unread", ["userId", "read"])
     .index("by_type", ["type"])
     .index("by_created_at", ["createdAt"]),
+
+  // Conversations table for direct messaging
+  conversations: defineTable({
+    workspaceId: v.id("workspaces"),
+    participants: v.array(v.id("users")), // Array of user IDs in the conversation
+    lastMessageId: v.optional(v.id("conversationMessages")),
+    lastMessageAt: v.optional(v.number()),
+    isActive: v.boolean(), // Whether the conversation is active
+    unreadCounts: v.optional(v.any()), // Object with userId as key and unread count as value
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_participants", ["participants"])
+    .index("by_active", ["isActive"]),
+
+  // Conversation messages table
+  conversationMessages: defineTable({
+    conversationId: v.id("conversations"),
+    senderId: v.id("users"),
+    content: v.string(),
+    messageType: v.union(v.literal("text"), v.literal("file"), v.literal("system")),
+    attachments: v.optional(v.array(v.id("documents"))),
+    readBy: v.array(v.object({
+      userId: v.id("users"),
+      readAt: v.number(),
+    })),
+    isEdited: v.boolean(),
+    editedAt: v.optional(v.number()),
+    isDeleted: v.boolean(),
+    deletedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_conversation", ["conversationId"])
+    .index("by_sender", ["senderId"])
+    .index("by_created_at", ["createdAt"]),
 });

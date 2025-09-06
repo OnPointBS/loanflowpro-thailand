@@ -12,7 +12,8 @@ import {
   CheckCircle,
   AlertCircle,
   Building2,
-  User
+  User,
+  ArrowRight
 } from "lucide-react";
 
 export default function ClientPortalContent() {
@@ -134,6 +135,15 @@ export default function ClientPortalContent() {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => window.location.href = '/portal/messages'}
+                className="flex items-center space-x-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Messages</span>
+              </Button>
               <div className="flex items-center space-x-2">
                 <User className="w-4 h-4 text-black" />
                 <span className="text-sm text-black font-bold">{user.email}</span>
@@ -147,125 +157,65 @@ export default function ClientPortalContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Loan Files */}
-          <div className="lg:col-span-2">
-            <Card variant="glass">
-              <CardHeader>
-                <CardTitle className="flex items-center text-black font-bold">
-                  <FileText className="w-5 h-5 mr-2 text-black" />
-                  Your Loan Files
-                </CardTitle>
-                <CardDescription className="text-black font-semibold">
-                  Track the progress of your loan applications
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {loanFiles.map((file) => (
-                    <div
-                      key={file.id}
-                      className="p-4 bg-gray-50 rounded-lg border border-gray-200"
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center space-x-2">
-                          {getStatusIcon(file.status)}
-                          <span className="font-bold text-black">{file.type}</span>
-                          <Badge variant={getStatusColor(file.status)}>
-                            {file.status.replace("_", " ")}
-                          </Badge>
-                        </div>
-                        <span className="text-sm text-black font-bold">
-                          {file.progress}% complete
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div
-                          className="bg-[#D4AF37] h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${file.progress}%` }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-sm text-black font-semibold">
-                        <span>Created {file.createdAt}</span>
-                        <span>Last activity {file.lastActivity}</span>
+        {/* Loan Files - Full Width */}
+        <Card variant="glass">
+          <CardHeader>
+            <CardTitle className="flex items-center text-black font-bold">
+              <FileText className="w-5 h-5 mr-2 text-black" />
+              Your Loan Files
+            </CardTitle>
+            <CardDescription className="text-black font-semibold">
+              Track the progress of your loan applications and complete required tasks
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {loanFiles.map((file) => (
+                <div
+                  key={file.id}
+                  className="p-6 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => window.location.href = `/portal/loan-file/${file.id}`}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      {getStatusIcon(file.status)}
+                      <div>
+                        <span className="text-lg font-bold text-black">{file.type}</span>
+                        <Badge variant={getStatusColor(file.status)} className="ml-2">
+                          {file.status.replace("_", " ")}
+                        </Badge>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Documents */}
-            <Card variant="glass">
-              <CardHeader>
-                <CardTitle className="flex items-center text-black font-bold">
-                  <FolderOpen className="w-5 h-5 mr-2 text-black" />
-                  Recent Documents
-                </CardTitle>
-                <CardDescription className="text-black font-semibold">
-                  Your uploaded documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {documents.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex items-center justify-between p-2 bg-gray-50 rounded"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <FileText className="w-4 h-4 text-black" />
-                        <span className="text-sm font-bold text-black">{doc.name}</span>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-black">
+                        {file.progress}% complete
+                      </span>
+                      <div className="text-sm text-gray-600">
+                        {file.progress === 100 ? 'Ready for review' : 'In progress'}
                       </div>
-                      <Badge variant={doc.status === "processed" ? "success" : "warning"}>
-                        {doc.status}
-                      </Badge>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Messages */}
-            <Card variant="glass">
-              <CardHeader>
-                <CardTitle className="flex items-center text-black font-bold">
-                  <MessageSquare className="w-5 h-5 mr-2 text-black" />
-                  Recent Messages
-                </CardTitle>
-                <CardDescription className="text-black font-semibold">
-                  Communication with your advisor
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {messages.map((message) => (
+                  </div>
+                  
+                  <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
                     <div
-                      key={message.id}
-                      className={`p-3 rounded-lg border ${
-                        message.unread
-                          ? "bg-blue-50 border-blue-200"
-                          : "bg-gray-50 border-gray-200"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-bold text-black">{message.from}</span>
-                        <span className="text-xs text-black font-semibold">{message.time}</span>
-                      </div>
-                      <p className="text-sm text-black font-bold mb-1">
-                        {message.subject}
-                      </p>
-                      <p className="text-xs text-black font-semibold">{message.preview}</p>
+                      className="bg-[#D4AF37] h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${file.progress}%` }}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-between items-center text-sm text-black font-semibold">
+                    <span>Created {file.createdAt}</span>
+                    <span>Last activity {file.lastActivity}</span>
+                    <div className="flex items-center space-x-2 text-[#D4AF37]">
+                      <span>View Details</span>
+                      <ArrowRight className="w-4 h-4" />
                     </div>
-                  ))}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

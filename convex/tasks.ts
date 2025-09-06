@@ -1,7 +1,119 @@
-import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { Doc, Id } from "./_generated/dataModel";
-import { api } from "./_generated/api";
+import { v } from "convex/values";
+
+// Get tasks for a specific loan file
+export const getTasksByLoanFile = query({
+  args: { loanFileId: v.id("loanFiles") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_loan_file", (q) => q.eq("loanFileId", args.loanFileId))
+      .collect();
+
+    return tasks;
+  },
+});
+
+// Get tasks for a specific client
+export const getTasksByClient = query({
+  args: { clientId: v.id("clients") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_client", (q) => q.eq("clientId", args.clientId))
+      .collect();
+
+    return tasks;
+  },
+});
+
+// Mark task as complete
+export const completeTask = mutation({
+  args: { 
+    taskId: v.id("tasks"),
+    completedBy: v.union(v.id("users"), v.id("clients")),
+    notes: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    // Check if user has permission to complete this task
+    if (task.assignedTo !== user._id && task.assignedTo !== "staff" && task.assignedTo !== "client") {
+      throw new Error("Not authorized to complete this task");
+    }
+
+    await ctx.db.patch(args.taskId, {
+      status: "completed",
+      completedAt: Date.now(),
+      completedBy: args.completedBy,
+      notes: args.notes,
+      updatedAt: Date.now(),
+    });
+
+    // Create notification for task completion
+    await ctx.db.insert("notifications", {
+      userId: user._id,
+      workspaceId: task.workspaceId,
+      type: "taskCompleted",
+      title: "Task Completed",
+      message: `Task "${task.title}" has been completed`,
+      read: false,
+      priority: "medium",
+      actionUrl: `/app/tasks/${args.taskId}`,
+      relatedResourceType: "task",
+      relatedResourceId: args.taskId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
 
 // Create a new task
 export const createTask = mutation({
@@ -9,10 +121,8 @@ export const createTask = mutation({
     title: v.string(),
     description: v.string(),
     category: v.string(),
-    status: v.union(v.literal("pending"), v.literal("in_progress"), v.literal("completed"), v.literal("cancelled")),
     priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
     assignedTo: v.union(v.id("users"), v.literal("staff"), v.id("clients")),
-    assignedBy: v.union(v.id("users"), v.literal("system")),
     dueDate: v.optional(v.number()),
     estimatedHours: v.optional(v.number()),
     workspaceId: v.id("workspaces"),
@@ -23,95 +133,54 @@ export const createTask = mutation({
     required: v.boolean(),
     order: v.number(),
     fileRequirements: v.optional(v.array(v.string())),
-    instructions: v.optional(v.string())
+    instructions: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
     const taskId = await ctx.db.insert("tasks", {
       ...args,
+      status: "pending",
+      assignedBy: user._id,
       createdAt: Date.now(),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
 
-    // Create notification for assigned user if it's a specific user
-    if (typeof args.assignedTo === "string" && args.assignedTo !== "staff") {
-      await ctx.runMutation(api.notifications.createNotification, {
-        userId: args.assignedTo as Id<"users">,
+    // Create notification for task assignment
+    if (args.assignedTo !== user._id) {
+      await ctx.db.insert("notifications", {
+        userId: args.assignedTo as any,
         workspaceId: args.workspaceId,
         type: "taskAssigned",
         title: "New Task Assigned",
         message: `You have been assigned a new task: "${args.title}"`,
+        read: false,
         priority: args.priority,
         actionUrl: `/app/tasks/${taskId}`,
         relatedResourceType: "task",
         relatedResourceId: taskId,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
       });
     }
 
-    return taskId;
+    return { taskId, success: true };
   },
 });
 
-// Get all tasks for a workspace
-export const getTasks = query({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, { workspaceId }) => {
-    return await ctx.db
-      .query("tasks")
-      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
-      .order("desc")
-      .collect();
-  },
-});
-
-// Get tasks for a specific client
-export const getClientTasks = query({
-  args: { 
-    workspaceId: v.id("workspaces"),
-    clientId: v.id("clients")
-  },
-  handler: async (ctx, { workspaceId, clientId }) => {
-    return await ctx.db
-      .query("tasks")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("workspaceId"), workspaceId),
-          q.eq(q.field("clientId"), clientId)
-        )
-      )
-      .order("asc")
-      .collect();
-  },
-});
-
-// Get tasks for a specific loan file
-export const getLoanFileTasks = query({
-  args: { 
-    workspaceId: v.id("workspaces"),
-    loanFileId: v.id("loanFiles")
-  },
-  handler: async (ctx, { workspaceId, loanFileId }) => {
-    return await ctx.db
-      .query("tasks")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("workspaceId"), workspaceId),
-          q.eq(q.field("loanFileId"), loanFileId)
-        )
-      )
-      .order("asc")
-      .collect();
-  },
-});
-
-// Get a specific task
-export const getTask = query({
-  args: { taskId: v.id("tasks") },
-  handler: async (ctx, { taskId }) => {
-    return await ctx.db.get(taskId);
-  },
-});
-
-// Update a task
+// Update task
 export const updateTask = mutation({
   args: {
     taskId: v.id("tasks"),
@@ -121,176 +190,72 @@ export const updateTask = mutation({
     priority: v.optional(v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent"))),
     assignedTo: v.optional(v.union(v.id("users"), v.literal("staff"), v.id("clients"))),
     dueDate: v.optional(v.number()),
-    estimatedHours: v.optional(v.number()),
-    isClientTask: v.optional(v.boolean()),
-    isStaffTask: v.optional(v.boolean()),
-    required: v.optional(v.boolean()),
-    order: v.optional(v.number()),
-    fileRequirements: v.optional(v.array(v.string())),
-    instructions: v.optional(v.string()),
-    completedAt: v.optional(v.number()),
-    completedBy: v.optional(v.union(v.id("users"), v.id("clients")))
+    notes: v.optional(v.string()),
   },
-  handler: async (ctx, { taskId, ...updates }) => {
-    return await ctx.db.patch(taskId, {
-      ...updates,
-      updatedAt: Date.now()
-    });
-  },
-});
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
 
-// Delete a task
-export const deleteTask = mutation({
-  args: { taskId: v.id("tasks") },
-  handler: async (ctx, { taskId }) => {
-    return await ctx.db.delete(taskId);
-  },
-});
-
-// Assign task to client
-export const assignTaskToClient = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    clientId: v.id("clients"),
-    workspaceId: v.id("workspaces")
-  },
-  handler: async (ctx, { taskId, clientId, workspaceId }) => {
-    // Check if task already exists for this client
-    const existingTask = await ctx.db
-      .query("tasks")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("workspaceId"), workspaceId),
-          q.eq(q.field("clientId"), clientId),
-          q.eq(q.field("_id"), taskId)
-        )
-      )
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
       .first();
 
-    if (existingTask) {
-      return existingTask._id;
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    // Create a new task instance for this client
-    const task = await ctx.db.get(taskId);
+    const task = await ctx.db.get(args.taskId);
     if (!task) {
       throw new Error("Task not found");
     }
 
-    return await ctx.db.insert("tasks", {
-      ...task,
-      clientId,
-      assignedTo: clientId,
-      status: "pending",
-      createdAt: Date.now(),
-      updatedAt: Date.now()
-    });
-  },
-});
-
-// Reorder tasks
-export const reorderTasks = mutation({
-  args: {
-    taskOrders: v.array(v.object({
-      taskId: v.id("tasks"),
-      newOrder: v.number()
-    }))
-  },
-  handler: async (ctx, { taskOrders }) => {
-    const updatePromises = taskOrders.map(({ taskId, newOrder }) =>
-      ctx.db.patch(taskId, { 
-        order: newOrder,
-        updatedAt: Date.now()
-      })
-    );
-
-    await Promise.all(updatePromises);
-    return true;
-  },
-});
-
-// Complete a task
-export const completeTask = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    completedBy: v.union(v.id("users"), v.id("clients")),
-    notes: v.optional(v.string())
-  },
-  handler: async (ctx, { taskId, completedBy, notes }) => {
-    const task = await ctx.db.get(taskId);
-    if (!task) {
-      throw new Error("Task not found");
+    // Check if user has permission to update this task
+    if (task.assignedBy !== user._id && user.role !== "advisor") {
+      throw new Error("Not authorized to update this task");
     }
 
-    await ctx.db.patch(taskId, {
-      status: "completed",
-      completedAt: Date.now(),
-      completedBy,
-      notes,
-      updatedAt: Date.now()
+    const { taskId, ...updateData } = args;
+    await ctx.db.patch(args.taskId, {
+      ...updateData,
+      updatedAt: Date.now(),
     });
 
-    // Create notification for workspace users about task completion
-    const workspaceUsers = await ctx.db
+    return { success: true };
+  },
+});
+
+// Delete task
+export const deleteTask = mutation({
+  args: { taskId: v.id("tasks") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    const user = await ctx.db
       .query("users")
-      .filter((q) => q.eq(q.field("workspaceId"), task.workspaceId))
-      .collect();
+      .withIndex("by_email", (q) => q.eq("email", identity.email!))
+      .first();
 
-    if (workspaceUsers.length > 0) {
-      await ctx.runMutation(api.notifications.createNotificationForUsers, {
-        userIds: workspaceUsers.map(u => u._id),
-        workspaceId: task.workspaceId,
-        type: "taskCompleted",
-        title: "Task Completed",
-        message: `Task "${task.title}" has been completed.`,
-        priority: "low",
-        actionUrl: `/app/tasks/${taskId}`,
-        relatedResourceType: "task",
-        relatedResourceId: taskId,
-      });
+    if (!user) {
+      throw new Error("User not found");
     }
 
-    return taskId;
-  },
-});
+    const task = await ctx.db.get(args.taskId);
+    if (!task) {
+      throw new Error("Task not found");
+    }
 
-// Get task statistics
-export const getTaskStats = query({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, { workspaceId }) => {
-    const tasks = await ctx.db
-      .query("tasks")
-      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
-      .collect();
+    // Check if user has permission to delete this task
+    if (task.assignedBy !== user._id && user.role !== "advisor") {
+      throw new Error("Not authorized to delete this task");
+    }
 
-    const stats = {
-      total: tasks.length,
-      pending: tasks.filter(t => t.status === "pending").length,
-      inProgress: tasks.filter(t => t.status === "in_progress").length,
-      completed: tasks.filter(t => t.status === "completed").length,
-      cancelled: tasks.filter(t => t.status === "cancelled").length,
-      overdue: tasks.filter(t => 
-        t.dueDate && t.dueDate < Date.now() && t.status !== "completed"
-      ).length,
-      clientTasks: tasks.filter(t => t.isClientTask).length,
-      staffTasks: tasks.filter(t => t.isStaffTask).length
-    };
-
-    return stats;
-  },
-});
-
-// Get overdue tasks
-export const getOverdueTasks = query({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, { workspaceId }) => {
-    const now = Date.now();
-    return await ctx.db
-      .query("tasks")
-      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
-      .filter((q) => q.neq(q.field("status"), "completed"))
-      .filter((q) => q.neq(q.field("status"), "cancelled"))
-      .filter((q) => q.lt(q.field("dueDate"), now))
-      .collect();
+    await ctx.db.delete(args.taskId);
+    return { success: true };
   },
 });

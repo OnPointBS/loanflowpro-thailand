@@ -20,6 +20,7 @@ import type * as auth from "../auth.js";
 import type * as billing from "../billing.js";
 import type * as clientInvitations from "../clientInvitations.js";
 import type * as clients from "../clients.js";
+import type * as conversations from "../conversations.js";
 import type * as documents from "../documents.js";
 import type * as loanFiles from "../loanFiles.js";
 import type * as loanTypes from "../loanTypes.js";
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   billing: typeof billing;
   clientInvitations: typeof clientInvitations;
   clients: typeof clients;
+  conversations: typeof conversations;
   documents: typeof documents;
   loanFiles: typeof loanFiles;
   loanTypes: typeof loanTypes;
