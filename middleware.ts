@@ -25,10 +25,6 @@ const roleBasedRoutes = {
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
-  // TEMPORARILY DISABLE MIDDLEWARE FOR TESTING - ALLOW ALL ACCESS
-  console.log("Middleware disabled for testing - allowing access to:", pathname);
-  return NextResponse.next();
-  
   // Allow public routes
   if (publicRoutes.some(route => pathname.startsWith(route))) {
     return NextResponse.next();
