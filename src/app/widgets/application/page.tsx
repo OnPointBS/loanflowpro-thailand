@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { useMutation } from "convex/react";
+import { useMutation, useAction, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -55,6 +55,7 @@ export default function ApplicationWidgetPage() {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [error, setError] = useState("");
   const [workspace, setWorkspace] = useState<any>(null);
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState<ApplicationData>({
     firstName: "",
@@ -71,16 +72,28 @@ export default function ApplicationWidgetPage() {
     additionalNotes: ""
   });
 
-  const createClient = useMutation(api.clients.createClient);
+  const submitApplication = useMutation(api.applications.submitApplication);
+  const sendThankYouEmail = useAction(api.applications.sendApplicationThankYouEmail);
+  const workspaceData = useQuery(api.auth.getWorkspaceBySlug, 
+    workspaceSlug ? { slug: workspaceSlug } : "skip"
+  );
 
   useEffect(() => {
-    if (workspaceSlug) {
+    if (workspaceData) {
+      setWorkspace({
+        name: workspaceData.name,
+        slug: workspaceData.slug,
+        _id: workspaceData._id
+      });
+      setWorkspaceId(workspaceData._id);
+    } else if (workspaceSlug) {
+      // Fallback for when workspace data is not available
       setWorkspace({
         name: workspaceSlug.replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()),
         slug: workspaceSlug
       });
     }
-  }, [workspaceSlug]);
+  }, [workspaceData, workspaceSlug]);
 
   const steps = [
     {
@@ -118,19 +131,20 @@ export default function ApplicationWidgetPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!workspace) return;
+    if (!workspaceId) return;
 
     setIsSubmitting(true);
     setError("");
     setStatus("idle");
 
     try {
-      await createClient({
+      // Submit the application
+      const clientId = await submitApplication({
+        workspaceId: workspaceId,
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
         phone: formData.phone,
-        workspaceId: workspace._id,
         source: "widget",
         additionalData: {
           loanAmount: formData.loanAmount,
@@ -143,8 +157,16 @@ export default function ApplicationWidgetPage() {
           additionalNotes: formData.additionalNotes
         }
       });
+
+      // Send thank you email
+      await sendThankYouEmail({
+        clientId: clientId,
+        workspaceId: workspaceId
+      });
+
       setStatus("success");
     } catch (err) {
+      console.error("Application submission error:", err);
       setError("Failed to submit application. Please try again.");
       setStatus("error");
     } finally {

@@ -161,7 +161,6 @@ export const assignTaskToClient = mutation({
 
     return await ctx.db.insert("tasks", {
       ...task,
-      _id: undefined as any,
       clientId,
       assignedTo: clientId,
       status: "pending",
@@ -233,5 +232,20 @@ export const getTaskStats = query({
     };
 
     return stats;
+  },
+});
+
+// Get overdue tasks
+export const getOverdueTasks = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, { workspaceId }) => {
+    const now = Date.now();
+    return await ctx.db
+      .query("tasks")
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
+      .filter((q) => q.neq(q.field("status"), "completed"))
+      .filter((q) => q.neq(q.field("status"), "cancelled"))
+      .filter((q) => q.lt(q.field("dueDate"), now))
+      .collect();
   },
 });

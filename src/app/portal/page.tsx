@@ -22,7 +22,7 @@ export default function ClientPortalPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-600">Please log in to access the client portal</p>
+          <p className="text-black font-bold">Please log in to access the client portal</p>
         </div>
       </div>
     );
@@ -104,15 +104,15 @@ export default function ClientPortalPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-4 h-4 text-green-600" />;
+        return <CheckCircle className="w-4 h-4 text-black" />;
       case "in_progress":
-        return <Clock className="w-4 h-4 text-yellow-600" />;
+        return <Clock className="w-4 h-4 text-black" />;
       case "pending":
-        return <AlertCircle className="w-4 h-4 text-blue-600" />;
+        return <AlertCircle className="w-4 h-4 text-black" />;
       case "rejected":
-        return <AlertCircle className="w-4 h-4 text-red-600" />;
+        return <AlertCircle className="w-4 h-4 text-black" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-600" />;
+        return <Clock className="w-4 h-4 text-black" />;
     }
   };
 
@@ -127,16 +127,16 @@ export default function ClientPortalPage() {
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-gray-900">
+                <h1 className="text-xl font-bold text-black">
                   {workspace.name} - Client Portal
                 </h1>
-                <p className="text-sm text-gray-500">Welcome, {user.profile.firstName}</p>
+                <p className="text-sm text-black font-semibold">Welcome, {user.profile.firstName}</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <User className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-600">{user.email}</span>
+                <User className="w-4 h-4 text-black" />
+                <span className="text-sm text-black font-bold">{user.email}</span>
               </div>
               <Button variant="outline" size="sm" onClick={logout}>
                 Sign Out
@@ -152,11 +152,11 @@ export default function ClientPortalPage() {
           <div className="lg:col-span-2">
             <Card variant="glass">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
+                <CardTitle className="flex items-center text-black font-bold">
+                  <FileText className="w-5 h-5 mr-2 text-black" />
                   Your Loan Files
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-black font-semibold">
                   Track the progress of your loan applications
                 </CardDescription>
               </CardHeader>
@@ -170,12 +170,12 @@ export default function ClientPortalPage() {
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center space-x-2">
                           {getStatusIcon(file.status)}
-                          <span className="font-medium">{file.type}</span>
+                          <span className="font-bold text-black">{file.type}</span>
                           <Badge variant={getStatusColor(file.status)}>
                             {file.status.replace("_", " ")}
                           </Badge>
                         </div>
-                        <span className="text-sm text-gray-500">
+                        <span className="text-sm text-black font-bold">
                           {file.progress}% complete
                         </span>
                       </div>
@@ -185,7 +185,7 @@ export default function ClientPortalPage() {
                           style={{ width: `${file.progress}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-sm text-gray-500">
+                      <div className="flex justify-between text-sm text-black font-semibold">
                         <span>Created {file.createdAt}</span>
                         <span>Last activity {file.lastActivity}</span>
                       </div>
@@ -201,11 +201,11 @@ export default function ClientPortalPage() {
             {/* Documents */}
             <Card variant="glass">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FolderOpen className="w-5 h-5 mr-2" />
+                <CardTitle className="flex items-center text-black font-bold">
+                  <FolderOpen className="w-5 h-5 mr-2 text-black" />
                   Recent Documents
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-black font-semibold">
                   Your uploaded documents
                 </CardDescription>
               </CardHeader>
@@ -217,8 +217,8 @@ export default function ClientPortalPage() {
                       className="flex items-center justify-between p-2 bg-gray-50 rounded"
                     >
                       <div className="flex items-center space-x-2">
-                        <FileText className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-medium">{doc.name}</span>
+                        <FileText className="w-4 h-4 text-black" />
+                        <span className="text-sm font-bold text-black">{doc.name}</span>
                       </div>
                       <Badge variant={doc.status === "processed" ? "success" : "warning"}>
                         {doc.status}
@@ -232,11 +232,11 @@ export default function ClientPortalPage() {
             {/* Messages */}
             <Card variant="glass">
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MessageSquare className="w-5 h-5 mr-2" />
+                <CardTitle className="flex items-center text-black font-bold">
+                  <MessageSquare className="w-5 h-5 mr-2 text-black" />
                   Recent Messages
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-black font-semibold">
                   Communication with your advisor
                 </CardDescription>
               </CardHeader>
@@ -252,13 +252,13 @@ export default function ClientPortalPage() {
                       }`}
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm font-medium">{message.from}</span>
-                        <span className="text-xs text-gray-500">{message.time}</span>
+                        <span className="text-sm font-bold text-black">{message.from}</span>
+                        <span className="text-xs text-black font-semibold">{message.time}</span>
                       </div>
-                      <p className="text-sm text-gray-600 font-medium mb-1">
+                      <p className="text-sm text-black font-bold mb-1">
                         {message.subject}
                       </p>
-                      <p className="text-xs text-gray-500">{message.preview}</p>
+                      <p className="text-xs text-black font-semibold">{message.preview}</p>
                     </div>
                   ))}
                 </div>

@@ -77,16 +77,30 @@ export default defineSchema({
     phone: v.optional(v.string()),
     status: v.union(v.literal("active"), v.literal("inactive"), v.literal("prospect")),
     workspaceId: v.id("workspaces"),
+    source: v.optional(v.string()), // "widget", "manual", "import", etc.
     profile: v.object({
+      firstName: v.optional(v.string()),
+      lastName: v.optional(v.string()),
       company: v.optional(v.string()),
       address: v.optional(v.string()),
       notes: v.optional(v.string()),
+      applicationData: v.optional(v.object({
+        loanAmount: v.optional(v.string()),
+        propertyAddress: v.optional(v.string()),
+        employmentStatus: v.optional(v.string()),
+        annualIncome: v.optional(v.string()),
+        creditScore: v.optional(v.string()),
+        loanPurpose: v.optional(v.string()),
+        downPayment: v.optional(v.string()),
+        additionalNotes: v.optional(v.string()),
+      })),
     }),
     loanFiles: v.array(v.id("loanFiles")),
     createdAt: v.number(),
     updatedAt: v.number(),
   }).index("by_workspace", ["workspaceId"])
-    .index("by_email", ["email"]),
+    .index("by_email", ["email"])
+    .index("by_source", ["source"]),
 
   // Loan Files table
   loanFiles: defineTable({
@@ -116,63 +130,6 @@ export default defineSchema({
     .index("by_workspace", ["workspaceId"])
     .index("by_status", ["status"]),
 
-  // Loan Types table (templates)
-  loanTypes: defineTable({
-    name: v.string(),
-    description: v.string(),
-    template: v.object({
-      defaultTasks: v.array(v.object({
-        title: v.string(),
-        description: v.string(),
-        dueDays: v.number(), // days from creation
-        urgency: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
-        requiredDocuments: v.array(v.string()),
-      })),
-      requiredFields: v.array(v.string()),
-      estimatedDuration: v.number(), // days
-    }),
-    workspaceId: v.id("workspaces"),
-    isActive: v.boolean(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  }).index("by_workspace", ["workspaceId"]),
-
-  // Tasks table
-  tasks: defineTable({
-    title: v.string(),
-    description: v.optional(v.string()),
-    status: v.union(v.literal("pending"), v.literal("in_progress"), v.literal("completed"), v.literal("cancelled")),
-    urgency: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
-    dueDate: v.optional(v.number()),
-    completedAt: v.optional(v.number()),
-    assignedTo: v.optional(v.id("users")),
-    loanFileId: v.id("loanFiles"),
-    workspaceId: v.id("workspaces"),
-    documentIds: v.array(v.id("documents")),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  }).index("by_loan_file", ["loanFileId"])
-    .index("by_workspace", ["workspaceId"])
-    .index("by_status", ["status"])
-    .index("by_due_date", ["dueDate"]),
-
-  // Documents table
-  documents: defineTable({
-    name: v.string(),
-    type: v.string(), // PDF, JPG, PNG, etc.
-    url: v.string(),
-    size: v.number(),
-    tags: v.array(v.string()),
-    ocrStatus: v.union(v.literal("pending"), v.literal("processing"), v.literal("completed"), v.literal("failed")),
-    ocrText: v.optional(v.string()),
-    loanFileId: v.id("loanFiles"),
-    workspaceId: v.id("workspaces"),
-    uploadedBy: v.id("users"),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  }).index("by_loan_file", ["loanFileId"])
-    .index("by_workspace", ["workspaceId"])
-    .index("by_ocr_status", ["ocrStatus"]),
 
   // Messages table
   messages: defineTable({

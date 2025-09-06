@@ -74,9 +74,9 @@ export default function AcceptInvitationPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-16 h-16 text-[#D4AF37] animate-spin mx-auto mb-4" />
+          <Loader2 className="w-16 h-16 text-black animate-spin mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-black mb-2">Accepting Invitation</h1>
-          <p className="text-black font-semibold">Please wait while we process your invitation...</p>
+          <p className="text-black font-bold">Please wait while we process your invitation...</p>
         </div>
       </div>
     );
@@ -86,9 +86,9 @@ export default function AcceptInvitationPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <AlertCircle className="w-16 h-16 text-black mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-black mb-2">Invitation Error</h1>
-          <p className="text-black font-semibold mb-6">{error}</p>
+          <p className="text-black font-bold mb-6">{error}</p>
           <Button
             onClick={() => router.push('/')}
             className="bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold"
@@ -107,7 +107,7 @@ export default function AcceptInvitationPage() {
           <Card className="text-center">
             <CardHeader>
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-black" />
               </div>
               <CardTitle className="text-2xl font-bold text-black">
                 Welcome to {invitation.workspaceName}!
@@ -118,31 +118,31 @@ export default function AcceptInvitationPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-center space-x-2">
-                <User className="w-5 h-5 text-gray-500" />
-                <span className="text-black font-semibold">{invitation.email}</span>
+                <User className="w-5 h-5 text-black" />
+                <span className="text-black font-bold">{invitation.email}</span>
               </div>
               
               <div className="flex items-center justify-center space-x-2">
-                <Building2 className="w-5 h-5 text-gray-500" />
-                <span className="text-black font-semibold">{invitation.workspaceName}</span>
+                <Building2 className="w-5 h-5 text-black" />
+                <span className="text-black font-bold">{invitation.workspaceName}</span>
               </div>
               
               <div className="flex items-center justify-center space-x-2">
-                <Shield className="w-5 h-5 text-gray-500" />
-                <Badge variant="outline" className="text-black font-semibold">
+                <Shield className="w-5 h-5 text-black" />
+                <Badge variant="outline" className="text-black font-bold">
                   {invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1)}
                 </Badge>
               </div>
 
               {invitation.message && (
                 <div className="bg-gray-50 p-4 rounded-lg">
-                  <p className="text-sm text-gray-600 italic">"{invitation.message}"</p>
+                  <p className="text-sm text-black font-bold italic">"{invitation.message}"</p>
                 </div>
               )}
 
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h3 className="font-bold text-black mb-2">What you can do:</h3>
-                <ul className="text-sm text-gray-600 space-y-1">
+                <ul className="text-sm text-black font-bold space-y-1">
                   {invitation.role === 'client' ? (
                     <>
                       <li>• View your loan files and progress</li>
@@ -168,8 +168,8 @@ export default function AcceptInvitationPage() {
                 </ul>
               </div>
 
-              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
-                <Clock className="w-4 h-4" />
+              <div className="flex items-center justify-center space-x-2 text-sm text-black font-bold">
+                <Clock className="w-4 h-4 text-black" />
                 <span>Redirecting you to your portal in 3 seconds...</span>
               </div>
 
