@@ -6,6 +6,8 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  output: 'standalone',
+  trailingSlash: true,
 };
 
 module.exports = nextConfig;
