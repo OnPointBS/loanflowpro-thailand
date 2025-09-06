@@ -118,8 +118,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("sessionToken", token);
         
         // Set cookies for middleware authentication
-        document.cookie = `user=${JSON.stringify(result.user)}; path=/; max-age=86400`; // 24 hours
-        document.cookie = `workspace=${JSON.stringify(result.workspace)}; path=/; max-age=86400`; // 24 hours
+        const userCookie = `user=${JSON.stringify(result.user)}; path=/; max-age=86400`; // 24 hours
+        const workspaceCookie = `workspace=${JSON.stringify(result.workspace)}; path=/; max-age=86400`; // 24 hours
+        
+        document.cookie = userCookie;
+        document.cookie = workspaceCookie;
+        
+        console.log("Set authentication cookies:", {
+          userCookie: userCookie.substring(0, 50) + "...",
+          workspaceCookie: workspaceCookie.substring(0, 50) + "...",
+          userRole: result.user.role,
+          redirectRoute: result.redirectRoute
+        });
         
         // Update permissions based on user role
         const userPermissions = RBACEngine.getPermissionsForUser(result.user as User, result.workspace?.settings);

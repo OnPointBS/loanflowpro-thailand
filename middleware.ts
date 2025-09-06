@@ -42,7 +42,16 @@ export function middleware(request: NextRequest) {
   const userCookie = request.cookies.get("user");
   const workspaceCookie = request.cookies.get("workspace");
   
+  console.log("Middleware check:", {
+    pathname,
+    hasUserCookie: !!userCookie,
+    hasWorkspaceCookie: !!workspaceCookie,
+    userCookieValue: userCookie?.value?.substring(0, 50) + "...",
+    workspaceCookieValue: workspaceCookie?.value?.substring(0, 50) + "..."
+  });
+  
   if (!userCookie || !workspaceCookie) {
+    console.log("No authentication cookies found, redirecting to homepage");
     // Redirect to login if not authenticated
     return NextResponse.redirect(new URL("/", request.url));
   }

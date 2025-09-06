@@ -50,14 +50,17 @@ function VerifyPageContentInner() {
         clearTimeout(timeoutId);
         
         if (result.success) {
+          console.log("Verification successful, redirecting to:", result.redirectRoute);
           setStatus("success");
           setRedirectRoute(result.redirectRoute);
           
-          // Redirect after a short delay
+          // Redirect after a short delay to allow cookies to be set
           setTimeout(() => {
+            console.log("Attempting redirect to:", result.redirectRoute);
             router.push(result.redirectRoute);
-          }, 1000); // Reduced delay for faster UX
+          }, 2000); // Increased delay to allow cookies to be set
         } else {
+          console.log("Verification failed:", result);
           setStatus("error");
           setError("Verification failed. Please try again.");
         }
