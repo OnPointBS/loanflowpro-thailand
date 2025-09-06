@@ -289,4 +289,89 @@ export default defineSchema({
   }).index("by_workspace", ["workspaceId"])
     .index("by_user", ["userId"])
     .index("by_resource", ["resourceType", "resourceId"]),
+
+  // Loan types table
+  loanTypes: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    workspaceId: v.id("workspaces"),
+    presetTasks: v.array(v.object({
+      title: v.string(),
+      description: v.string(),
+      category: v.string(),
+      isClientTask: v.boolean(),
+      isStaffTask: v.boolean(),
+      required: v.boolean(),
+      estimatedDays: v.number(),
+      order: v.number()
+    })),
+    requirements: v.array(v.string()),
+    interestRateRange: v.object({
+      min: v.number(),
+      max: v.number()
+    }),
+    maxLoanAmount: v.number(),
+    minCreditScore: v.number(),
+    maxLtv: v.number(), // Loan-to-Value ratio
+    active: v.boolean(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_active", ["active"]),
+
+  // Tasks table
+  tasks: defineTable({
+    title: v.string(),
+    description: v.string(),
+    category: v.string(),
+    status: v.union(v.literal("pending"), v.literal("in_progress"), v.literal("completed"), v.literal("cancelled")),
+    priority: v.union(v.literal("low"), v.literal("medium"), v.literal("high"), v.literal("urgent")),
+    assignedTo: v.union(v.id("users"), v.literal("staff"), v.id("clients")),
+    assignedBy: v.union(v.id("users"), v.literal("system")),
+    dueDate: v.optional(v.number()),
+    estimatedHours: v.optional(v.number()),
+    workspaceId: v.id("workspaces"),
+    loanFileId: v.optional(v.id("loanFiles")),
+    clientId: v.optional(v.id("clients")),
+    isClientTask: v.boolean(),
+    isStaffTask: v.boolean(),
+    required: v.boolean(),
+    order: v.number(),
+    fileRequirements: v.optional(v.array(v.string())),
+    instructions: v.optional(v.string()),
+    completedAt: v.optional(v.number()),
+    completedBy: v.optional(v.union(v.id("users"), v.id("clients"))),
+    notes: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_client", ["clientId"])
+    .index("by_loan_file", ["loanFileId"])
+    .index("by_status", ["status"])
+    .index("by_assigned_to", ["assignedTo"]),
+
+  // Documents table
+  documents: defineTable({
+    name: v.string(),
+    type: v.string(),
+    size: v.number(),
+    url: v.string(),
+    category: v.string(),
+    workspaceId: v.id("workspaces"),
+    taskId: v.optional(v.id("tasks")),
+    clientId: v.optional(v.id("clients")),
+    loanFileId: v.optional(v.id("loanFiles")),
+    description: v.optional(v.string()),
+    uploadedBy: v.union(v.id("users"), v.literal("system")),
+    uploadedAt: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_workspace", ["workspaceId"])
+    .index("by_task", ["taskId"])
+    .index("by_client", ["clientId"])
+    .index("by_loan_file", ["loanFileId"])
+    .index("by_category", ["category"]),
 });
