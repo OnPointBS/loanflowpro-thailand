@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -30,16 +30,6 @@ export default function MessagesContent() {
   const [newMessage, setNewMessage] = useState("");
   const [showClientProfile, setShowClientProfile] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  if (!user || !workspace) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-black font-bold">Please log in to access the client portal</p>
-        </div>
-      </div>
-    );
-  }
 
   // Mock data - in real app, fetch from Convex
   const conversations = [
@@ -73,7 +63,7 @@ export default function MessagesContent() {
     }
   ];
 
-  const messages = [
+  const messages = useMemo(() => [
     {
       id: "1",
       senderId: "advisor1",
@@ -121,7 +111,7 @@ export default function MessagesContent() {
       isFromClient: false,
       attachments: []
     }
-  ];
+  ], []);
 
   const clientProfile = {
     name: "John Doe",
@@ -160,6 +150,16 @@ export default function MessagesContent() {
   }, [messages]);
 
   const selectedConv = conversations.find(c => c.id === selectedConversation);
+
+  if (!user || !workspace) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-black font-bold">Please log in to access the client portal</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
