@@ -71,6 +71,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSessionToken(token);
       // TODO: Verify token with backend
     }
+    
+    // Check for authentication cookies and set state
+    const userCookie = document.cookie.split(';').find(c => c.trim().startsWith('user='));
+    const workspaceCookie = document.cookie.split(';').find(c => c.trim().startsWith('workspace='));
+    
+    if (userCookie && workspaceCookie) {
+      try {
+        const userData = JSON.parse(userCookie.split('=')[1]);
+        const workspaceData = JSON.parse(workspaceCookie.split('=')[1]);
+        
+        console.log("Found authentication cookies, setting user and workspace state:", {
+          user: userData,
+          workspace: workspaceData
+        });
+        
+        setUser(userData);
+        setWorkspace(workspaceData);
+        
+        // Update permissions based on user role
+        const userPermissions = RBACEngine.getPermissionsForUser(userData, workspaceData?.settings);
+        setPermissions(userPermissions);
+      } catch (error) {
+        console.error("Error parsing authentication cookies:", error);
+      }
+    }
+    
     setIsLoading(false);
   }, []);
 
