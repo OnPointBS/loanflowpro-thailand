@@ -98,11 +98,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setWorkspace(null);
     setPermissions([]);
     localStorage.removeItem("sessionToken");
+    
+    // Clear authentication cookies
+    document.cookie = "user=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie = "workspace=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
   };
 
   const verifyMagicLink = async (token: string) => {
     try {
+      console.log("Verifying magic link with token:", token);
       const result = await verifyMagicLinkMutation({ token });
+      console.log("Magic link verification result:", result);
       
       if (result.success) {
         // Update local state with user and workspace data
@@ -111,9 +117,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setSessionToken(token); // Use the magic link token as session token for now
         localStorage.setItem("sessionToken", token);
         
+        // Set cookies for middleware authentication
+        document.cookie = `user=${JSON.stringify(result.user)}; path=/; max-age=86400`; // 24 hours
+        document.cookie = `workspace=${JSON.stringify(result.workspace)}; path=/; max-age=86400`; // 24 hours
+        
         // Update permissions based on user role
         const userPermissions = RBACEngine.getPermissionsForUser(result.user as User, result.workspace?.settings);
         setPermissions(userPermissions);
+        
+        console.log("User authenticated successfully:", {
+          email: result.user.email,
+          role: result.user.role,
+          redirectRoute: result.redirectRoute
+        });
       }
       
       return result;

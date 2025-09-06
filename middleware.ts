@@ -17,7 +17,7 @@ const publicRoutes = [
 
 // Define routes that require specific roles
 const roleBasedRoutes = {
-  "/app": ["advisor", "staff"],
+  "/app": ["advisor", "staff", "partner"],
   "/portal": ["client"],
   "/workspaces": ["advisor", "staff", "client"],
 };
@@ -64,7 +64,7 @@ export function middleware(request: NextRequest) {
     }
 
     // Check workspace access
-    if (user.workspaceId !== workspace.id) {
+    if (user.workspaceId !== workspace._id) {
       return NextResponse.redirect(new URL("/workspaces", request.url));
     }
 
