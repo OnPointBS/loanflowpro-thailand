@@ -1,22 +1,19 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import ClientProviders from "@/components/providers/ClientProviders";
+import AppLayoutContent from "@/components/layout/AppLayoutContent";
 
-// Dynamically import the app layout component to prevent static generation
-const AppLayoutContent = dynamic(() => import("@/components/layout/AppLayoutContent"), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <LoadingSpinner size="lg" />
-    </div>
-  ),
-});
+// Prevent static generation
+export const dynamic = 'force-dynamic';
 
 export default function AppLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <AppLayoutContent>{children}</AppLayoutContent>;
+  return (
+    <ClientProviders>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </ClientProviders>
+  );
 }
