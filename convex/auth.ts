@@ -42,9 +42,11 @@ export const getWorkspaceBySlug = query({
 export const sendMagicLink = action({
   args: { 
     email: v.string(),
-    workspaceSlug: v.optional(v.string())
+    workspaceSlug: v.optional(v.string()),
+    source: v.optional(v.string()),
+    domain: v.optional(v.string())
   },
-  handler: async (ctx, { email, workspaceSlug }) => {
+  handler: async (ctx, { email, workspaceSlug, source = "app", domain }) => {
     console.log(`sendMagicLink called with email: ${email}, workspaceSlug: ${workspaceSlug}`);
     const resendApiKey = process.env.RESEND_API_KEY;
     const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
@@ -104,7 +106,7 @@ export const sendMagicLink = action({
       const { data, error } = await resend.emails.send({
         from: 'noreply@flow.loanflowpro.com',
         to: [email],
-        subject: `Sign in to ${workspaceName}`,
+        subject: source === "widget" ? `Sign in to your ${workspaceName} client portal` : `Sign in to ${workspaceName}`,
         html: `
           <!DOCTYPE html>
           <html>
@@ -130,9 +132,14 @@ export const sendMagicLink = action({
 
               <!-- Content -->
               <div style="padding: 40px 24px;">
-                <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px; font-weight: 600; text-align: center;">Sign in to your account</h2>
+                <h2 style="margin: 0 0 16px 0; color: #1f2937; font-size: 24px; font-weight: 600; text-align: center;">
+                  ${source === "widget" ? "Access Your Client Portal" : "Sign in to your account"}
+                </h2>
                 <p style="margin: 0 0 24px 0; color: #6b7280; font-size: 16px; line-height: 1.5; text-align: center;">
-                  Click the button below to securely sign in to your account. This link will expire in 15 minutes.
+                  ${source === "widget" 
+                    ? `You requested access to your ${workspaceName} client portal. Click the button below to securely sign in and view your loan information.` 
+                    : "Click the button below to securely sign in to your account. This link will expire in 15 minutes."
+                  }
                 </p>
                 
                 <div style="text-align: center; margin: 32px 0;">
@@ -142,7 +149,7 @@ export const sendMagicLink = action({
                       <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"></path>
                       <rect x="2" y="4" width="20" height="16" rx="2"></rect>
                     </svg>
-                    Sign In Securely
+                    ${source === "widget" ? "Access Client Portal" : "Sign In Securely"}
                   </a>
                 </div>
 

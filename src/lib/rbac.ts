@@ -10,7 +10,8 @@ export type Permission =
   | "settings:manage"
   | "tasks:create" | "tasks:read" | "tasks:update" | "tasks:delete"
   | "messages:create" | "messages:read"
-  | "reports:read";
+  | "reports:read"
+  | "widgets:manage";
 
 export interface User {
   _id: string;
@@ -53,6 +54,7 @@ export class RBACEngine {
       "tasks:create", "tasks:read", "tasks:update", "tasks:delete",
       "messages:create", "messages:read",
       "reports:read",
+      "widgets:manage",
     ],
     staff: [
       "clients:create", "clients:read", "clients:update", "clients:delete",

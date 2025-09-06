@@ -27,6 +27,7 @@ import {
   ChevronRight,
   UserCheck,
   LogOut,
+  Code,
 } from "lucide-react";
 
 const navigation = [
@@ -36,6 +37,7 @@ const navigation = [
   { name: "Loan Types", href: "/app/loan-types", icon: FolderOpen },
   { name: "Messages", href: "/app/messages", icon: MessageSquare },
   { name: "Invitations", href: "/app/invitations", icon: Mail },
+  { name: "Widgets", href: "/app/widgets", icon: Code },
   { name: "Seats", href: "/app/seats", icon: UserCheck },
   { name: "Billing", href: "/app/billing", icon: CreditCard },
   { name: "Settings", href: "/app/settings", icon: Settings },
