@@ -1,210 +1,196 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useMutation } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
-import { CheckCircle, XCircle, ArrowRight, Mail, Users } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { 
+  CheckCircle, 
+  AlertCircle, 
+  Loader2,
+  User,
+  Building2,
+  Mail,
+  Clock,
+  Shield
+} from "lucide-react";
 
-function AcceptInvitationPageContent() {
-  const router = useRouter();
+export default function AcceptInvitationPage() {
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState<"verifying" | "success" | "error" | "expired">("verifying");
-  const [error, setError] = useState("");
-  const [workspaceName, setWorkspaceName] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [invitation, setInvitation] = useState<any>(null);
 
   const acceptInvitation = useMutation(api.userInvitations.acceptUserInvitation);
 
+  const token = searchParams.get("token");
+
   useEffect(() => {
-    const token = searchParams.get("token");
-    
     if (!token) {
-      setStatus("error");
-      setError("No invitation token provided");
-      setIsLoading(false);
+      setError("Invalid invitation link");
+      setLoading(false);
       return;
     }
 
-    const acceptInvite = async () => {
-      try {
-        const result = await acceptInvitation({ token });
+    handleAcceptInvitation();
+  }, [token]);
+
+  const handleAcceptInvitation = async () => {
+    if (!token) return;
+
+    try {
+      setLoading(true);
+      const result = await acceptInvitation({ token });
+      
+      if (result.success) {
+        setSuccess(true);
+        setInvitation(result.invitation);
         
-        if (result.success) {
-          setStatus("success");
-          setWorkspaceName(result.workspace.name);
-          
-          // Store user data in localStorage
-          localStorage.setItem("user", JSON.stringify(result.user));
-          localStorage.setItem("workspace", JSON.stringify(result.workspace));
-          
-          // Redirect after a short delay
-          setTimeout(() => {
-            router.push(result.redirectRoute);
-          }, 3000);
-        }
-      } catch (err) {
-        console.error("Invitation acceptance error:", err);
-        
-        if (err instanceof Error) {
-          if (err.message.includes("expired")) {
-            setStatus("expired");
-          } else if (err.message.includes("already been accepted")) {
-            setStatus("error");
-            setError("This invitation has already been accepted");
-          } else if (err.message.includes("already a member")) {
-            setStatus("error");
-            setError("You are already a member of this workspace");
+        // Redirect to appropriate portal after 3 seconds
+        setTimeout(() => {
+          if (result.invitation?.role === 'client') {
+            router.push('/portal');
           } else {
-            setStatus("error");
-            setError(err.message);
+            router.push('/app');
           }
-        } else {
-          setStatus("error");
-          setError("Failed to accept invitation. Please try again.");
-        }
-      } finally {
-        setIsLoading(false);
+        }, 3000);
+      } else {
+        setError(result.error || "Failed to accept invitation");
       }
-    };
-
-    acceptInvite();
-  }, [searchParams, acceptInvitation, router]);
-
-  const handleRetry = () => {
-    router.push("/");
+    } catch (err: any) {
+      console.error("Error accepting invitation:", err);
+      setError(err.message || "An error occurred while accepting the invitation");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
         <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="text-gray-600 mt-4">Processing your invitation...</p>
+          <Loader2 className="w-16 h-16 text-[#D4AF37] animate-spin mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-black mb-2">Accepting Invitation</h1>
+          <p className="text-black font-semibold">Please wait while we process your invitation...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card variant="glass">
-          <CardHeader>
-            <CardTitle className="text-center">
-              {status === "verifying" && "Processing invitation"}
-              {status === "success" && "Welcome to LoanFlow Pro!"}
-              {status === "error" && "Invitation error"}
-              {status === "expired" && "Invitation expired"}
-            </CardTitle>
-            <CardDescription className="text-center">
-              {status === "verifying" && "Please wait while we process your invitation"}
-              {status === "success" && `You're now part of ${workspaceName}`}
-              {status === "error" && "There was an issue with your invitation"}
-              {status === "expired" && "Your invitation has expired"}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="text-center">
-            {status === "success" && (
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-green-600 font-medium">Invitation accepted successfully!</p>
-                  <p className="text-gray-600 text-sm mt-2">
-                    You now have access to {workspaceName} on LoanFlow Pro.
-                  </p>
-                </div>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
-                  <div className="flex items-center justify-center mb-2">
-                    <Users className="w-5 h-5 text-blue-600 mr-2" />
-                    <span className="text-blue-800 font-medium">What you can do now:</span>
-                  </div>
-                  <ul className="text-sm text-blue-700 text-left space-y-1">
-                    <li>• Access your dashboard</li>
-                    <li>• View loan files and documents</li>
-                    <li>• Communicate with your team</li>
-                    <li>• Manage your account</li>
-                  </ul>
-                </div>
-                <div className="pt-4">
-                  <Button onClick={() => router.push("/app")}>
-                    Go to Dashboard
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {status === "error" && (
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-                  <XCircle className="w-8 h-8 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-red-600 font-medium">Invitation error</p>
-                  <p className="text-gray-600 text-sm mt-2">
-                    {error || "There was an issue with your invitation. Please try again."}
-                  </p>
-                </div>
-                <div className="pt-4">
-                  <Button onClick={handleRetry} variant="outline">
-                    Try Again
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {status === "expired" && (
-              <div className="space-y-4">
-                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto">
-                  <XCircle className="w-8 h-8 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-yellow-600 font-medium">Invitation expired</p>
-                  <p className="text-gray-600 text-sm mt-2">
-                    Your invitation has expired. Please contact your advisor for a new invitation.
-                  </p>
-                </div>
-                <div className="pt-4">
-                  <Button onClick={handleRetry} variant="outline">
-                    Contact Support
-                  </Button>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">
-            Need help? Contact support at{" "}
-            <a href="mailto:support@loanflowpro.com" className="text-[#D4AF37] hover:underline">
-              support@loanflowpro.com
-            </a>
-          </p>
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-black mb-2">Invitation Error</h1>
+          <p className="text-black font-semibold mb-6">{error}</p>
+          <Button
+            onClick={() => router.push('/')}
+            className="bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold"
+          >
+            Go to Homepage
+          </Button>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-export default function AcceptInvitationPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading invitation...</p>
+  if (success && invitation) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+        <div className="max-w-md mx-auto p-6">
+          <Card className="text-center">
+            <CardHeader>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-black">
+                Welcome to {invitation.workspaceName}!
+              </CardTitle>
+              <CardDescription className="text-black font-semibold">
+                Your invitation has been accepted successfully
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-center space-x-2">
+                <User className="w-5 h-5 text-gray-500" />
+                <span className="text-black font-semibold">{invitation.email}</span>
+              </div>
+              
+              <div className="flex items-center justify-center space-x-2">
+                <Building2 className="w-5 h-5 text-gray-500" />
+                <span className="text-black font-semibold">{invitation.workspaceName}</span>
+              </div>
+              
+              <div className="flex items-center justify-center space-x-2">
+                <Shield className="w-5 h-5 text-gray-500" />
+                <Badge variant="outline" className="text-black font-semibold">
+                  {invitation.role.charAt(0).toUpperCase() + invitation.role.slice(1)}
+                </Badge>
+              </div>
+
+              {invitation.message && (
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-sm text-gray-600 italic">"{invitation.message}"</p>
+                </div>
+              )}
+
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <h3 className="font-bold text-black mb-2">What you can do:</h3>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {invitation.role === 'client' ? (
+                    <>
+                      <li>• View your loan files and progress</li>
+                      <li>• Access important documents</li>
+                      <li>• Communicate with your advisor</li>
+                      <li>• Track application status</li>
+                    </>
+                  ) : invitation.role === 'staff' ? (
+                    <>
+                      <li>• Manage client information</li>
+                      <li>• Process loan applications</li>
+                      <li>• Upload and organize documents</li>
+                      <li>• Track workflow progress</li>
+                    </>
+                  ) : (
+                    <>
+                      <li>• Collaborate on loan processing</li>
+                      <li>• Access shared resources</li>
+                      <li>• Communicate with the team</li>
+                      <li>• Review loan applications</li>
+                    </>
+                  )}
+                </ul>
+              </div>
+
+              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                <Clock className="w-4 h-4" />
+                <span>Redirecting you to your portal in 3 seconds...</span>
+              </div>
+
+              <Button
+                onClick={() => {
+                  if (invitation.role === 'client') {
+                    router.push('/portal');
+                  } else {
+                    router.push('/app');
+                  }
+                }}
+                className="w-full bg-[#D4AF37] hover:bg-[#B8941F] text-white font-bold"
+              >
+                Continue to Portal
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
-    }>
-      <AcceptInvitationPageContent />
-    </Suspense>
-  );
+    );
+  }
+
+  return null;
 }
