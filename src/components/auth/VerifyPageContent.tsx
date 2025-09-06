@@ -57,7 +57,8 @@ function VerifyPageContentInner() {
           // Redirect after a short delay to allow cookies to be set
           setTimeout(() => {
             console.log("Attempting redirect to:", result.redirectRoute);
-            router.push(result.redirectRoute);
+            // Use window.location.href to force a full page reload and ensure cookies are sent
+            window.location.href = result.redirectRoute;
           }, 2000); // Increased delay to allow cookies to be set
         } else {
           console.log("Verification failed:", result);
@@ -76,7 +77,7 @@ function VerifyPageContentInner() {
             setStatus("success");
             setRedirectRoute("/app");
             setTimeout(() => {
-              router.push("/app");
+              window.location.href = "/app";
             }, 500); // Faster redirect for already used links
           } else {
             setStatus("error");
