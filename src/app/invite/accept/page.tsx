@@ -17,7 +17,7 @@ function AcceptInvitationPageContent() {
   const [workspaceName, setWorkspaceName] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const acceptInvitation = useMutation(api.clientInvitations.acceptClientInvitation);
+  const acceptInvitation = useMutation(api.userInvitations.acceptUserInvitation);
 
   useEffect(() => {
     const token = searchParams.get("token");
@@ -96,7 +96,7 @@ function AcceptInvitationPageContent() {
           <CardHeader>
             <CardTitle className="text-center">
               {status === "verifying" && "Processing invitation"}
-              {status === "success" && "Welcome to the client portal!"}
+              {status === "success" && "Welcome to LoanFlow Pro!"}
               {status === "error" && "Invitation error"}
               {status === "expired" && "Invitation expired"}
             </CardTitle>
@@ -117,7 +117,7 @@ function AcceptInvitationPageContent() {
                 <div>
                   <p className="text-green-600 font-medium">Invitation accepted successfully!</p>
                   <p className="text-gray-600 text-sm mt-2">
-                    You now have access to the client portal for {workspaceName}.
+                    You now have access to {workspaceName} on LoanFlow Pro.
                   </p>
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
@@ -126,15 +126,15 @@ function AcceptInvitationPageContent() {
                     <span className="text-blue-800 font-medium">What you can do now:</span>
                   </div>
                   <ul className="text-sm text-blue-700 text-left space-y-1">
-                    <li>• View your loan files and progress</li>
-                    <li>• Access important documents</li>
-                    <li>• Communicate with your advisor</li>
-                    <li>• Track application status</li>
+                    <li>• Access your dashboard</li>
+                    <li>• View loan files and documents</li>
+                    <li>• Communicate with your team</li>
+                    <li>• Manage your account</li>
                   </ul>
                 </div>
                 <div className="pt-4">
-                  <Button onClick={() => router.push("/portal")}>
-                    Go to Client Portal
+                  <Button onClick={() => router.push("/app")}>
+                    Go to Dashboard
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>

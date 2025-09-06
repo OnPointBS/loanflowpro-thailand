@@ -1,4 +1,4 @@
-export type UserRole = "advisor" | "staff" | "client";
+export type UserRole = "advisor" | "staff" | "client" | "partner";
 
 export type Permission = 
   | "workspace:manage"
@@ -63,6 +63,13 @@ export class RBACEngine {
       "messages:create", "messages:read",
       "reports:read",
     ],
+    partner: [
+      "clients:read", "clients:update",
+      "loanfiles:read", "loanfiles:update",
+      "documents:read",
+      "messages:create", "messages:read",
+      "reports:read",
+    ],
     client: [
       "loanfiles:read",
       "documents:read",
@@ -115,6 +122,8 @@ export class RBACEngine {
       case "advisor":
         return `/app`;
       case "staff":
+        return `/app`;
+      case "partner":
         return `/app`;
       case "client":
         return `/portal`;
@@ -225,6 +234,6 @@ export class RBACEngine {
    * Check if a user can access admin dashboard
    */
   static canAccessAdminDashboard(user: User): boolean {
-    return (user.role === "advisor" || user.role === "staff") && user.status === "active";
+    return (user.role === "advisor" || user.role === "staff" || user.role === "partner") && user.status === "active";
   }
 }

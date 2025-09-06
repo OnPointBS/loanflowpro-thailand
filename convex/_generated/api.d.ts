@@ -24,6 +24,7 @@ import type * as loanTypes from "../loanTypes.js";
 import type * as messages from "../messages.js";
 import type * as permissions from "../permissions.js";
 import type * as tasks from "../tasks.js";
+import type * as userInvitations from "../userInvitations.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -45,6 +46,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   permissions: typeof permissions;
   tasks: typeof tasks;
+  userInvitations: typeof userInvitations;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

@@ -6,7 +6,7 @@ export default defineSchema({
   users: defineTable({
     email: v.string(),
     name: v.optional(v.string()),
-    role: v.union(v.literal("advisor"), v.literal("staff"), v.literal("client")),
+    role: v.union(v.literal("advisor"), v.literal("staff"), v.literal("client"), v.literal("partner")),
     workspaceId: v.id("workspaces"),
     status: v.union(v.literal("active"), v.literal("pending"), v.literal("suspended")),
     permissions: v.optional(v.array(v.string())), // custom permissions override
@@ -234,7 +234,30 @@ export default defineSchema({
   }).index("by_email", ["email"])
     .index("by_token", ["token"]),
 
-  // Client invitations
+  // User invitations (clients, staff, partners)
+  userInvitations: defineTable({
+    email: v.string(),
+    workspaceId: v.id("workspaces"),
+    invitedBy: v.id("users"),
+    token: v.string(),
+    invitationType: v.union(v.literal("client"), v.literal("staff"), v.literal("partner")),
+    role: v.union(v.literal("client"), v.literal("staff"), v.literal("partner")),
+    status: v.union(v.literal("pending"), v.literal("accepted"), v.literal("expired")),
+    expiresAt: v.number(),
+    acceptedAt: v.optional(v.number()),
+    clientId: v.optional(v.id("clients")),
+    message: v.optional(v.string()),
+    permissions: v.optional(v.array(v.string())), // custom permissions for the invited user
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_token", ["token"])
+    .index("by_email", ["email"])
+    .index("by_workspace", ["workspaceId"])
+    .index("by_status", ["status"])
+    .index("by_type", ["invitationType"])
+    .index("by_workspace_type", ["workspaceId", "invitationType"]),
+
+  // Legacy client invitations (for backward compatibility)
   clientInvitations: defineTable({
     email: v.string(),
     workspaceId: v.id("workspaces"),

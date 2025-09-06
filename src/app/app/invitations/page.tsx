@@ -1,10 +1,10 @@
 "use client";
 
 import { useAuth } from "@/contexts/AuthContext";
-import { ClientInvitationManager } from "@/components/ClientInvitationManager";
+import { UserInvitationManager } from "@/components/UserInvitationManager";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
-import { Users, Mail, Clock, CheckCircle } from "lucide-react";
+import { Users, Mail, Clock, CheckCircle, Shield, Handshake } from "lucide-react";
 
 export default function InvitationsPage() {
   const { user, workspace, canInviteUsers } = useAuth();
@@ -31,50 +31,54 @@ export default function InvitationsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Client Invitations
+            User Invitations
           </h1>
           <p className="text-gray-600">
-            Invite clients to access their portal and manage invitations
+            Invite clients, staff members, and partners to your workspace
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Invitation Stats */}
+        <div className="grid gap-6 lg:grid-cols-4">
+          {/* User Type Overview */}
           <div className="lg:col-span-1">
             <Card variant="glass">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Users className="w-5 h-5 mr-2" />
-                  Invitation Stats
+                  User Types
                 </CardTitle>
                 <CardDescription>
-                  Overview of your invitations
+                  Different roles and permissions
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="space-y-3">
                   <div className="flex items-center space-x-2">
-                    <Mail className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm text-gray-600">Total Sent</span>
+                    <Users className="w-4 h-4 text-blue-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Clients</p>
+                      <p className="text-xs text-gray-500">Access loan files & documents</p>
+                    </div>
                   </div>
-                  <Badge variant="info">0</Badge>
-                </div>
-                <div className="flex items-center justify-between">
+                  
                   <div className="flex items-center space-x-2">
-                    <Clock className="w-4 h-4 text-yellow-600" />
-                    <span className="text-sm text-gray-600">Pending</span>
+                    <Shield className="w-4 h-4 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Staff</p>
+                      <p className="text-xs text-gray-500">Manage clients & workflows</p>
+                    </div>
                   </div>
-                  <Badge variant="warning">0</Badge>
-                </div>
-                <div className="flex items-center justify-between">
+                  
                   <div className="flex items-center space-x-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-gray-600">Accepted</span>
+                    <Handshake className="w-4 h-4 text-purple-600" />
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Partners</p>
+                      <p className="text-xs text-gray-500">Collaborate on loan processing</p>
+                    </div>
                   </div>
-                  <Badge variant="success">0</Badge>
                 </div>
               </CardContent>
             </Card>
@@ -95,19 +99,23 @@ export default function InvitationsPage() {
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-[#D4AF37] rounded-full mt-2 flex-shrink-0"></div>
-                  <p>Clients can access their loan files and documents</p>
+                  <p>Partners can&apos;t be invited - only clients and staff</p>
                 </div>
                 <div className="flex items-start space-x-2">
                   <div className="w-2 h-2 bg-[#D4AF37] rounded-full mt-2 flex-shrink-0"></div>
                   <p>You can resend or cancel invitations anytime</p>
+                </div>
+                <div className="flex items-start space-x-2">
+                  <div className="w-2 h-2 bg-[#D4AF37] rounded-full mt-2 flex-shrink-0"></div>
+                  <p>Future: Stripe billing will charge per seat</p>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Invitation Manager */}
-          <div className="lg:col-span-2">
-            <ClientInvitationManager 
+          <div className="lg:col-span-3">
+            <UserInvitationManager 
               workspaceId={workspace.id} 
               canInvite={canInviteUsers} 
             />

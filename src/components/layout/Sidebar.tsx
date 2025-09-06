@@ -25,6 +25,8 @@ import {
   Mail,
   ChevronLeft,
   ChevronRight,
+  UserCheck,
+  LogOut,
 } from "lucide-react";
 
 const navigation = [
@@ -34,6 +36,7 @@ const navigation = [
   { name: "Loan Types", href: "/app/loan-types", icon: FolderOpen },
   { name: "Messages", href: "/app/messages", icon: MessageSquare },
   { name: "Invitations", href: "/app/invitations", icon: Mail },
+  { name: "Seats", href: "/app/seats", icon: UserCheck },
   { name: "Billing", href: "/app/billing", icon: CreditCard },
   { name: "Settings", href: "/app/settings", icon: Settings },
 ];
@@ -49,7 +52,7 @@ export function Sidebar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isCollapsed, toggleCollapse } = useSidebar();
   const pathname = usePathname();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { workspace, isTrial } = useWorkspace();
 
   return (
@@ -202,6 +205,20 @@ export function Sidebar() {
 
           {/* Footer */}
           <div className={cn("py-4 border-t border-gray-200", isCollapsed ? "px-2" : "px-4")}>
+            {/* Sign Out Button */}
+            <button
+              onClick={logout}
+              className={cn(
+                "w-full flex items-center text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors group mb-3",
+                isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2"
+              )}
+              title={isCollapsed ? "Sign Out" : undefined}
+            >
+              <LogOut className={cn("w-5 h-5", !isCollapsed && "mr-3")} />
+              {!isCollapsed && "Sign Out"}
+            </button>
+            
+            {/* Copyright */}
             {!isCollapsed ? (
               <div className="text-xs text-gray-500">
                 <p>© 2024 LoanFlow Pro</p>

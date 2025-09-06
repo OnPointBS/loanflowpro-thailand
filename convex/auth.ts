@@ -400,14 +400,6 @@ export const getWorkspace = query({
   },
 });
 
-// Get user by ID
-export const getUser = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, { userId }) => {
-    return await ctx.db.get(userId);
-  },
-});
-
 // Update user profile
 export const updateUserProfile = mutation({
   args: {
@@ -425,18 +417,6 @@ export const updateUserProfile = mutation({
     });
   },
 });
-
-// Get workspace users
-export const getWorkspaceUsers = query({
-  args: { workspaceId: v.id("workspaces") },
-  handler: async (ctx, { workspaceId }) => {
-    return await ctx.db
-      .query("users")
-      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
-      .collect();
-  },
-});
-
 
 // Verify magic link
 export const verifyMagicLink = mutation({
@@ -752,5 +732,49 @@ export const updateWorkspace = mutation({
     await ctx.db.patch(workspaceId, updateData);
 
     return { success: true };
+  },
+});
+
+// Get workspace users
+export const getWorkspaceUsers = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, { workspaceId }) => {
+    return await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
+      .collect();
+  },
+});
+
+// Get user by ID
+export const getUser = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, { userId }) => {
+    return await ctx.db.get(userId);
+  },
+});
+
+// Get workspace seat usage
+export const getWorkspaceSeatUsage = query({
+  args: { workspaceId: v.id("workspaces") },
+  handler: async (ctx, { workspaceId }) => {
+    const workspace = await ctx.db.get(workspaceId);
+    if (!workspace) {
+      throw new Error("Workspace not found");
+    }
+
+    const users = await ctx.db
+      .query("users")
+      .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
+      .collect();
+
+    const activeUsers = users.filter(user => user.status === "active");
+    
+    return {
+      total: workspace.subscription.seats,
+      used: activeUsers.length,
+      available: workspace.subscription.seats - activeUsers.length,
+      users: activeUsers,
+    };
   },
 });
