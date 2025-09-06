@@ -232,74 +232,76 @@ export default function PublicHeader() {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="lg:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
-              {Object.entries(megaMenuItems).map(([key, menu]) => (
-                <div key={key} className="space-y-1">
-                  <button
-                    onClick={() => setActiveMegaMenu(activeMegaMenu === key ? null : key)}
-                    className="flex items-center justify-between w-full text-left px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
-                  >
-                    <span>{menu.title}</span>
-                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMegaMenu === key ? 'rotate-180' : ''}`} />
-                  </button>
-                  
-                  {activeMegaMenu === key && (
-                    <div className="pl-6 space-y-2">
-                      {menu.columns.map((column, columnIndex) => (
-                        <div key={columnIndex}>
-                          <h4 className="text-sm font-semibold text-gray-900 mb-2">{column.title}</h4>
-                          <ul className="space-y-1">
-                            {column.items.map((item, itemIndex) => (
-                              <li key={itemIndex}>
-                                <Link
-                                  href={`/${key}/${item.name.toLowerCase().replace(/\s+/g, '-')}`}
-                                  className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-[#D4AF37] transition-colors duration-200"
-                                  onClick={closeMenu}
-                                >
-                                  <item.icon className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
-                                  <span>{item.name}</span>
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-              
-              <Link
-                href="/pricing"
-                className="block px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
-                onClick={closeMenu}
-              >
-                Pricing
-              </Link>
-              <Link
-                href="/contact"
-                className="block px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
-                onClick={closeMenu}
-              >
-                Contact
-              </Link>
-              
-              <div className="pt-4 border-t border-gray-200 space-y-2">
+          <div className="lg:hidden fixed inset-0 z-50 bg-white">
+            <div className="h-full overflow-y-auto">
+              <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t border-gray-200">
+                {Object.entries(megaMenuItems).map(([key, menu]) => (
+                  <div key={key} className="space-y-1">
+                    <button
+                      onClick={() => setActiveMegaMenu(activeMegaMenu === key ? null : key)}
+                      className="flex items-center justify-between w-full text-left px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
+                    >
+                      <span>{menu.title}</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${activeMegaMenu === key ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {activeMegaMenu === key && (
+                      <div className="pl-6 space-y-2">
+                        {menu.columns.map((column, columnIndex) => (
+                          <div key={columnIndex}>
+                            <h4 className="text-sm font-semibold text-gray-900 mb-2">{column.title}</h4>
+                            <ul className="space-y-1">
+                              {column.items.map((item, itemIndex) => (
+                                <li key={itemIndex}>
+                                  <Link
+                                    href={`/${key}/${item.name.toLowerCase().replace(/\s+/g, '-')}`}
+                                    className="flex items-center space-x-2 px-3 py-2 text-sm text-gray-600 hover:text-[#D4AF37] transition-colors duration-200"
+                                    onClick={closeMenu}
+                                  >
+                                    <item.icon className="w-4 h-4 text-[#D4AF37] flex-shrink-0" />
+                                    <span>{item.name}</span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                
                 <Link
-                  href="/auth/signin"
+                  href="/pricing"
                   className="block px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
                   onClick={closeMenu}
                 >
-                  Sign In
+                  Pricing
                 </Link>
                 <Link
-                  href="/auth/signup"
-                  className="block mx-3 bg-gradient-to-r from-[#D4AF37] to-[#B8941F] text-white px-6 py-2 rounded-lg font-medium hover:from-[#B8941F] hover:to-[#D4AF37] transition-all duration-200 text-center"
+                  href="/contact"
+                  className="block px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
                   onClick={closeMenu}
                 >
-                  Start Free Trial
+                  Contact
                 </Link>
+                
+                <div className="pt-4 border-t border-gray-200 space-y-2">
+                  <Link
+                    href="/auth/signin"
+                    className="block px-3 py-2 text-gray-700 hover:text-[#D4AF37] transition-colors duration-200 font-medium"
+                    onClick={closeMenu}
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/auth/signup"
+                    className="block mx-3 bg-gradient-to-r from-[#D4AF37] to-[#B8941F] text-white px-6 py-2 rounded-lg font-medium hover:from-[#B8941F] hover:to-[#D4AF37] transition-all duration-200 text-center"
+                    onClick={closeMenu}
+                  >
+                    Start Free Trial
+                  </Link>
+                </div>
               </div>
             </div>
           </div>
