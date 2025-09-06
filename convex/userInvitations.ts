@@ -79,7 +79,7 @@ export const sendUserInvitation = mutation({
       }
 
       // Create invitation URL
-      const invitationUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/invite/accept?token=${token}`;
+      const invitationUrl = `${process.env.FRONTEND_URL || "https://loanflowpro.com"}/invite/accept?token=${token}`;
 
       // Send email via Resend
       try {
@@ -369,7 +369,7 @@ export const resendInvitation = mutation({
     }
 
     // Create invitation URL
-    const invitationUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/invite/accept?token=${invitation.token}`;
+    const invitationUrl = `${process.env.FRONTEND_URL || "https://loanflowpro.com"}/invite/accept?token=${invitation.token}`;
 
     // Send email via Resend
     try {
@@ -459,7 +459,7 @@ export const resendInvitation = mutation({
 
 // Get role-specific email content
 function getEmailContentForRole(role: string, workspaceName: string, message?: string, invitationUrl?: string) {
-  const baseUrl = invitationUrl || "http://localhost:3000/invite/accept";
+  const baseUrl = invitationUrl || "https://loanflowpro.com/invite/accept";
   
   switch (role) {
     case "client":

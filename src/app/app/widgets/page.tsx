@@ -69,7 +69,7 @@ export default function WidgetsPage() {
   }
 
   const signInWidgetCode = `<iframe 
-  src="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/widgets/signin?workspace=${workspace?.slug}&domain=${encodeURIComponent(window.location.hostname)}"
+  src="${process.env.NEXT_PUBLIC_APP_URL || 'https://loanflowpro.com'}/widgets/signin?workspace=${workspace?.slug}&domain=${encodeURIComponent(window.location.hostname)}"
   width="400" 
   height="500" 
   frameborder="0"
@@ -78,7 +78,7 @@ export default function WidgetsPage() {
 </iframe>`;
 
   const applicationWidgetCode = `<iframe 
-  src="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/widgets/application?workspace=${workspace?.slug}&domain=${encodeURIComponent(window.location.hostname)}"
+  src="${process.env.NEXT_PUBLIC_APP_URL || 'https://loanflowpro.com'}/widgets/application?workspace=${workspace?.slug}&domain=${encodeURIComponent(window.location.hostname)}"
   width="500" 
   height="600" 
   frameborder="0"

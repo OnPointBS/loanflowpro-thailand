@@ -49,7 +49,7 @@ export const sendMagicLink = action({
   handler: async (ctx, { email, workspaceSlug, source = "app", domain }) => {
     console.log(`sendMagicLink called with email: ${email}, workspaceSlug: ${workspaceSlug}`);
     const resendApiKey = process.env.RESEND_API_KEY;
-    const baseUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+    const baseUrl = process.env.FRONTEND_URL || "https://loanflowpro.com";
     
     if (!resendApiKey) {
       console.log(`Magic link for ${email}: ${baseUrl}/auth/verify?token=mock-token (Resend API key not configured)`);

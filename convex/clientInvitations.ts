@@ -72,7 +72,7 @@ export const sendClientInvitation = mutation({
       }
 
       // Send invitation email
-      const invitationUrl = `${process.env.NEXTAUTH_URL}/invite/accept?token=${token}`;
+      const invitationUrl = `${process.env.FRONTEND_URL || "https://loanflowpro.com"}/invite/accept?token=${token}`;
       
       try {
         const resendApiKey = process.env.RESEND_API_KEY;
