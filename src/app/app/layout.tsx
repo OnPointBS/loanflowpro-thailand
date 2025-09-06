@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/contexts/AuthContext";
 import { useWorkspace } from "@/contexts/WorkspaceContext";
+import { useSidebar } from "@/contexts/SidebarContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -15,6 +16,7 @@ export default function AppLayout({
 }) {
   const { user, isLoading: authLoading } = useAuth();
   const { workspace, isLoading: workspaceLoading } = useWorkspace();
+  const { isCollapsed } = useSidebar();
   const router = useRouter();
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function AppLayout({
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
-      <div className="lg:pl-64">
+      <div className={`transition-all duration-200 ease-in-out ${isCollapsed ? 'lg:pl-16' : 'lg:pl-64'}`}>
         <Header />
         <main className="py-6">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
