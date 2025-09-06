@@ -116,7 +116,7 @@ export default function InvitationsPage() {
           {/* Invitation Manager */}
           <div className="lg:col-span-3">
             <UserInvitationManager 
-              workspaceId={workspace.id} 
+              workspaceId={workspace._id} 
               canInvite={canInviteUsers} 
             />
           </div>

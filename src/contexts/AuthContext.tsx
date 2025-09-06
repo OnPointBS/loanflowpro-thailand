@@ -46,6 +46,7 @@ interface AuthContextType {
   hasPermission: (permission: Permission) => boolean;
   canAccess: (resource: string, action: string) => boolean;
   canManageBilling: boolean;
+  canInviteUsers: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -133,6 +134,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const canManageBilling = hasPermission("billing:manage");
+  const canInviteUsers = hasPermission("users:invite");
 
   const value: AuthContextType = {
     user,
@@ -146,6 +148,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     hasPermission,
     canAccess,
     canManageBilling,
+    canInviteUsers,
   };
 
   return (
