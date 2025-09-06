@@ -65,22 +65,22 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-[#D4AF37] rounded-2xl mb-4">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-black mb-2">
             LoanFlow Pro
           </h1>
-          <p className="text-gray-600">
+          <p className="text-black font-semibold">
             Streamline your loan workflow management
           </p>
         </div>
 
         <Card variant="glass">
           <CardHeader>
-            <CardTitle className="text-center">
+            <CardTitle className="text-center text-black font-bold">
               {step === "email" && "Sign in to your account"}
               {step === "workspace" && "Select your workspace"}
               {step === "new-workspace" && "Create your workspace"}
             </CardTitle>
-            <CardDescription className="text-center">
+            <CardDescription className="text-center text-black font-semibold">
               {step === "email" && "We'll send you a secure magic link"}
               {step === "workspace" && "Choose which workspace to access"}
               {step === "new-workspace" && "Set up your new workspace"}
@@ -173,7 +173,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setStep("email")}
-                  className="w-full text-sm text-gray-600 hover:text-gray-800"
+                  className="w-full text-sm text-black font-bold hover:text-gray-800"
                   disabled={isSubmitting}
                 >
                   ← Back to email
@@ -184,7 +184,7 @@ export default function LoginPage() {
         </Card>
 
         <div className="mt-8 text-center">
-          <div className="flex items-center justify-center space-x-4 text-sm text-gray-500">
+          <div className="flex items-center justify-center space-x-4 text-sm text-black font-semibold">
             <Badge variant="info">Secure</Badge>
             <Badge variant="success">No passwords</Badge>
             <Badge variant="warning">14-day trial</Badge>
@@ -195,7 +195,7 @@ export default function LoginPage() {
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <div className="flex items-center">
               <Users className="w-5 h-5 text-blue-600 mr-2" />
-              <p className="text-sm text-blue-800">
+              <p className="text-sm text-blue-800 font-bold">
                 New to LoanFlow Pro? Create your workspace to get started.
               </p>
             </div>

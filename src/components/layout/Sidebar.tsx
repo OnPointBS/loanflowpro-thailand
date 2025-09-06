@@ -96,11 +96,11 @@ export function Sidebar() {
               </div>
               {!isCollapsed && (
                 <div>
-                  <h1 className="text-lg font-semibold text-gray-900">
+                  <h1 className="text-lg font-bold text-black">
                     LoanFlow Pro
                   </h1>
                   {workspace && (
-                    <p className="text-sm text-gray-500">{workspace.name}</p>
+                    <p className="text-sm font-semibold text-black">{workspace.name}</p>
                   )}
                 </div>
               )}
@@ -130,10 +130,10 @@ export function Sidebar() {
                 </div>
                 {!isCollapsed && (
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-bold text-black truncate">
                       {user.profile.firstName} {user.profile.lastName}
                     </p>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p className="text-sm font-semibold text-black truncate">
                       {user.email}
                     </p>
                   </div>
@@ -163,8 +163,8 @@ export function Sidebar() {
                       "flex items-center text-sm font-medium rounded-lg transition-colors group",
                       isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2",
                       isActive
-                        ? "bg-[#D4AF37]/10 text-[#D4AF37]"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-[#D4AF37]/10 text-[#D4AF37] font-bold"
+                        : "text-black font-bold hover:bg-gray-100"
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
                     title={isCollapsed ? item.name : undefined}
@@ -179,7 +179,7 @@ export function Sidebar() {
             {/* Quick Actions */}
             <div className={cn("py-4 border-t border-gray-200", isCollapsed ? "px-2" : "px-4")}>
               {!isCollapsed && (
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-bold text-black uppercase tracking-wider mb-3">
                   Quick Actions
                 </h3>
               )}
@@ -189,7 +189,7 @@ export function Sidebar() {
                     key={action.name}
                     href={action.href}
                     className={cn(
-                      "flex items-center text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors group",
+                      "flex items-center text-sm text-black font-bold hover:bg-gray-100 rounded-lg transition-colors group",
                       isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2"
                     )}
                     onClick={() => setIsMobileMenuOpen(false)}
@@ -209,7 +209,7 @@ export function Sidebar() {
             <button
               onClick={logout}
               className={cn(
-                "w-full flex items-center text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors group mb-3",
+                "w-full flex items-center text-sm text-black font-bold hover:bg-gray-100 rounded-lg transition-colors group mb-3",
                 isCollapsed ? "px-2 py-3 justify-center" : "px-3 py-2"
               )}
               title={isCollapsed ? "Sign Out" : undefined}
@@ -220,12 +220,12 @@ export function Sidebar() {
             
             {/* Copyright */}
             {!isCollapsed ? (
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-black font-semibold">
                 <p>© 2024 LoanFlow Pro</p>
                 <p>Version 1.0.0</p>
               </div>
             ) : (
-              <div className="text-xs text-gray-500 text-center">
+              <div className="text-xs text-black font-semibold text-center">
                 <p>v1.0.0</p>
               </div>
             )}

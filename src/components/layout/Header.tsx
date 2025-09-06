@@ -34,7 +34,7 @@ export function Header() {
             <input
               type="text"
               placeholder="Search clients, loan files, documents..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#D4AF37]/20 focus:border-[#D4AF37] outline-none font-bold text-black"
             />
           </div>
         </div>
@@ -66,10 +66,10 @@ export function Header() {
                 </span>
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-bold text-black">
                   {user?.profile.firstName} {user?.profile.lastName}
                 </p>
-                <p className="text-xs text-gray-500">{user?.email}</p>
+                <p className="text-xs font-semibold text-black">{user?.email}</p>
               </div>
             </button>
 
@@ -77,26 +77,26 @@ export function Header() {
             {isProfileOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                 <div className="px-4 py-2 border-b border-gray-200">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-bold text-black">
                     {user?.profile.firstName} {user?.profile.lastName}
                   </p>
-                  <p className="text-xs text-gray-500">{user?.email}</p>
+                  <p className="text-xs font-semibold text-black">{user?.email}</p>
                 </div>
                 
                 <div className="py-1">
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-black font-bold hover:bg-gray-100">
                     <User className="w-4 h-4 mr-3" />
                     Profile
                   </button>
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-black font-bold hover:bg-gray-100">
                     <Settings className="w-4 h-4 mr-3" />
                     Settings
                   </button>
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-black font-bold hover:bg-gray-100">
                     <CreditCard className="w-4 h-4 mr-3" />
                     Billing
                   </button>
-                  <button className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <button className="flex items-center w-full px-4 py-2 text-sm text-black font-bold hover:bg-gray-100">
                     <HelpCircle className="w-4 h-4 mr-3" />
                     Help & Support
                   </button>
@@ -105,7 +105,7 @@ export function Header() {
                 <div className="border-t border-gray-200 py-1">
                   <button
                     onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                    className="flex items-center w-full px-4 py-2 text-sm text-red-600 font-bold hover:bg-red-50"
                   >
                     <LogOut className="w-4 h-4 mr-3" />
                     Sign out
