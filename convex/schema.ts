@@ -17,7 +17,7 @@ export default defineSchema({
       avatar: v.optional(v.string()),
       phone: v.optional(v.string()),
     }),
-    notificationSettings: v.object({
+    notificationSettings: v.optional(v.object({
       email: v.boolean(),
       inApp: v.boolean(),
       types: v.object({
@@ -33,7 +33,7 @@ export default defineSchema({
         systemAlert: v.boolean(),
       }),
       frequency: v.union(v.literal("immediate"), v.literal("hourly"), v.literal("daily")),
-    }),
+    })),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

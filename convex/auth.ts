@@ -529,7 +529,12 @@ export const verifyMagicLink = mutation({
           updatedAt: Date.now(),
         });
 
+        // Get the newly created user
         user = await ctx.db.get(userId);
+        
+        if (!user) {
+          throw new Error("Failed to create user");
+        }
       } else {
         // Update last active
         await ctx.db.patch(user._id, {
@@ -539,8 +544,17 @@ export const verifyMagicLink = mutation({
       }
 
       if (!user) {
+        console.error("User creation failed or user not found after creation");
         throw new Error("Failed to create or retrieve user");
       }
+
+      console.log("User found/created successfully:", {
+        userId: user._id,
+        email: user.email,
+        role: user.role,
+        workspaceId: user.workspaceId,
+        isNewUser: magicLink.email === user.email && user.createdAt > (Date.now() - 60000)
+      });
 
       // Get workspace
       const workspace = await ctx.db.get(user.workspaceId);
@@ -569,7 +583,7 @@ export const verifyMagicLink = mutation({
           status: workspace.status,
         },
         redirectRoute,
-        isNewUser: !user || user.status === "pending", // Check if user was just created or is pending
+        isNewUser: magicLink.email === user.email && user.createdAt > (Date.now() - 60000), // Check if user was just created (within last minute)
       };
     } catch (error) {
       console.error("Error verifying magic link:", error);

@@ -48,13 +48,19 @@ function VerifyPageContentInner() {
         console.log("Verification result:", result);
         
         clearTimeout(timeoutId);
-        setStatus("success");
-        setRedirectRoute(result.redirectRoute);
         
-        // Redirect after a short delay
-        setTimeout(() => {
-          router.push(result.redirectRoute);
-        }, 1000); // Reduced delay for faster UX
+        if (result.success) {
+          setStatus("success");
+          setRedirectRoute(result.redirectRoute);
+          
+          // Redirect after a short delay
+          setTimeout(() => {
+            router.push(result.redirectRoute);
+          }, 1000); // Reduced delay for faster UX
+        } else {
+          setStatus("error");
+          setError("Verification failed. Please try again.");
+        }
       } catch (err) {
         console.error("Verification error:", err);
         clearTimeout(timeoutId);
