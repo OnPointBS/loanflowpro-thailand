@@ -27,8 +27,7 @@ export const processOCR = action({
     // Update document with OCR results
     await ctx.runMutation(api.documents.updateDocument, {
       documentId,
-      ocrText: mockOCRResults.text,
-      ocrStatus: "completed",
+      description: mockOCRResults.text,
     });
     
     return { success: true, results: mockOCRResults };

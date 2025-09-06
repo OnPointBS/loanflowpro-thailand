@@ -215,6 +215,23 @@ export const acceptClientInvitation = mutation({
             firstName: "",
             lastName: "",
           },
+          notificationSettings: {
+            email: true,
+            inApp: true,
+            types: {
+              taskAssigned: true,
+              taskCompleted: true,
+              taskOverdue: true,
+              clientAdded: true,
+              clientUpdated: true,
+              loanFileStatusChange: true,
+              documentUploaded: true,
+              messageReceived: true,
+              invitationReceived: true,
+              systemAlert: true,
+            },
+            frequency: "immediate",
+          },
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });

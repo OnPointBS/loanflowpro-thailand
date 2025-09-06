@@ -273,7 +273,7 @@ export const acceptUserInvitation = mutation({
         });
       } else {
         // Create new user
-        user = await ctx.db.insert("users", {
+        const userId = await ctx.db.insert("users", {
           email: invitation.email,
           role: invitation.role,
           workspaceId: invitation.workspaceId,
@@ -283,9 +283,28 @@ export const acceptUserInvitation = mutation({
             firstName: invitation.email.split('@')[0],
             lastName: "",
           },
+          notificationSettings: {
+            email: true,
+            inApp: true,
+            types: {
+              taskAssigned: true,
+              taskCompleted: true,
+              taskOverdue: true,
+              clientAdded: true,
+              clientUpdated: true,
+              loanFileStatusChange: true,
+              documentUploaded: true,
+              messageReceived: true,
+              invitationReceived: true,
+              systemAlert: true,
+            },
+            frequency: "immediate",
+          },
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });
+        
+        user = await ctx.db.get(userId);
       }
 
       // Update invitation status
@@ -296,19 +315,21 @@ export const acceptUserInvitation = mutation({
       });
 
       // Log the action
-      await ctx.db.insert("auditLogs", {
-        action: "user_invitation_accepted",
-        resourceType: "userInvitation",
-        resourceId: invitation._id,
-        userId: user._id,
-        workspaceId: invitation.workspaceId,
-        details: { 
-          email: invitation.email,
-          invitationType: invitation.invitationType,
-          role: invitation.role,
-        },
-        createdAt: Date.now(),
-      });
+      if (user) {
+        await ctx.db.insert("auditLogs", {
+          action: "user_invitation_accepted",
+          resourceType: "userInvitation",
+          resourceId: invitation._id,
+          userId: user._id,
+          workspaceId: invitation.workspaceId,
+          details: { 
+            email: invitation.email,
+            invitationType: invitation.invitationType,
+            role: invitation.role,
+          },
+          createdAt: Date.now(),
+        });
+      }
 
       return { 
         success: true, 

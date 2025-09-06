@@ -28,7 +28,6 @@ import type * as notifications from "../notifications.js";
 import type * as permissions from "../permissions.js";
 import type * as tasks from "../tasks.js";
 import type * as userInvitations from "../userInvitations.js";
-import type * as userInvitations_fixed from "../userInvitations_fixed.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -54,7 +53,6 @@ declare const fullApi: ApiFromModules<{
   permissions: typeof permissions;
   tasks: typeof tasks;
   userInvitations: typeof userInvitations;
-  userInvitations_fixed: typeof userInvitations_fixed;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

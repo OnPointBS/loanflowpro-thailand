@@ -4,7 +4,7 @@ import { Id } from "./_generated/dataModel";
 import { Resend } from "resend";
 import { api } from "./_generated/api";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Submit application from widget
 export const submitApplication = mutation({
@@ -234,6 +234,11 @@ export const sendApplicationThankYouEmail = action({
 
     // Send email using Resend
     try {
+      if (!resend) {
+        console.log("Resend not configured, skipping email send");
+        return { success: true, message: "Application submitted successfully (email not sent - Resend not configured)" };
+      }
+
       const emailResult = await resend.emails.send({
         from: `"${workspaceName}" <noreply@flow.loanflowpro.com>`,
         to: [clientEmail],
