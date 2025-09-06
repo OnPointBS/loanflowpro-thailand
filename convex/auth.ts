@@ -498,10 +498,27 @@ export const verifyMagicLink = mutation({
           throw new Error("Workspace required for new users");
         }
 
-        // Create user with pending status
+        // Check if there's a pending invitation for this user
+        const pendingInvitation = await ctx.db
+          .query("userInvitations")
+          .filter((q) => q.eq(q.field("email"), magicLink.email))
+          .filter((q) => q.eq(q.field("workspaceId"), workspaceId))
+          .filter((q) => q.eq(q.field("status"), "pending"))
+          .first();
+
+        // Determine user role based on invitation or default to advisor
+        let userRole: "advisor" | "staff" | "client" | "partner" = "advisor";
+        if (pendingInvitation) {
+          userRole = pendingInvitation.role;
+          console.log(`User ${magicLink.email} was invited as ${userRole}, using invitation role`);
+        } else {
+          console.log(`User ${magicLink.email} is self-registering, defaulting to advisor role`);
+        }
+
+        // Create user with the determined role
         const userId = await ctx.db.insert("users", {
           email: magicLink.email,
-          role: "advisor", // Default role for loan workflow management
+          role: userRole,
           workspaceId,
           status: "active",
           profile: {
@@ -528,6 +545,16 @@ export const verifyMagicLink = mutation({
           createdAt: Date.now(),
           updatedAt: Date.now(),
         });
+
+        // If there was a pending invitation, mark it as accepted
+        if (pendingInvitation) {
+          await ctx.db.patch(pendingInvitation._id, {
+            status: "accepted",
+            acceptedAt: Date.now(),
+            acceptedBy: userId,
+          });
+          console.log(`Marked invitation for ${magicLink.email} as accepted`);
+        }
 
         // Get the newly created user
         user = await ctx.db.get(userId);
@@ -564,6 +591,7 @@ export const verifyMagicLink = mutation({
 
       // Determine redirect route based on user role and status
       const redirectRoute = RBACEngine.getDefaultRouteForUser(user, workspace);
+      console.log(`Redirecting user ${user.email} with role ${user.role} to ${redirectRoute}`);
 
       return {
         success: true,

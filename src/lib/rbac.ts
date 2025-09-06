@@ -122,15 +122,21 @@ export class RBACEngine {
   static getDefaultRouteForUser(user: User, workspace: { slug: string }): string {
     switch (user.role) {
       case "advisor":
+        // Advisors (admins) go to the main dashboard
         return `/app`;
       case "staff":
+        // Staff members go to the main dashboard
         return `/app`;
       case "partner":
+        // Partners go to the main dashboard (they have limited access)
         return `/app`;
       case "client":
+        // Clients go to the client portal
         return `/portal`;
       default:
-        return `/login`;
+        // Unknown role, redirect to login
+        console.warn(`Unknown user role: ${user.role}, redirecting to login`);
+        return `/auth/signin`;
     }
   }
 
